@@ -1,0 +1,177 @@
+{
+  "at": "2026-09-26T22:04:27.135Z",
+  "engine": "gemini",
+  "model": "gemini-3.1-flash-lite",
+  "status": "completed",
+  "scope": "Eight real ATI released excerpts test unnecessary redaction of visible published text. Six synthetic fixtures separately test sensitive-character coverage. These are small engineering checks, not legal accuracy or independent validation. Released PDFs cannot provide gold labels for their hidden text. The public excerpts also appear in the reference library; classification does not retrieve that library.",
+  "publicReleased": [
+    {
+      "id": "ati-lac-a-2026-02577",
+      "requestRef": "A-2026-02577",
+      "source": "https://telechargerdemandesaicompletees-downloadcompletedatirequests.bac-lac.gc.ca/eng/search/details/A-2026-02577?filename=A-2026-02577_10",
+      "pdfPage": 4,
+      "label": "visible in actual released package",
+      "expectedAdditionalRedactionCharacters": 0,
+      "totalCharacters": 109,
+      "flaggedCharacters": 0,
+      "suggestions": 0,
+      "matchedObservedTreatment": true,
+      "latencyMs": 2214
+    },
+    {
+      "id": "ati-lac-a-2026-01279",
+      "requestRef": "A-2026-01279",
+      "source": "https://telechargerdemandesaicompletees-downloadcompletedatirequests.bac-lac.gc.ca/eng/search/details/A-2026-01279?filename=A-2026-01279_01",
+      "pdfPage": 4,
+      "label": "visible in actual released package",
+      "expectedAdditionalRedactionCharacters": 0,
+      "totalCharacters": 71,
+      "flaggedCharacters": 0,
+      "suggestions": 0,
+      "matchedObservedTreatment": true,
+      "latencyMs": 13394
+    },
+    {
+      "id": "ati-lac-a-2026-01235",
+      "requestRef": "A-2026-01235",
+      "source": "https://telechargerdemandesaicompletees-downloadcompletedatirequests.bac-lac.gc.ca/eng/search/details/A-2026-01235?filename=A-2026-01235_01",
+      "pdfPage": 4,
+      "label": "visible in actual released package",
+      "expectedAdditionalRedactionCharacters": 0,
+      "totalCharacters": 105,
+      "flaggedCharacters": 0,
+      "suggestions": 0,
+      "matchedObservedTreatment": true,
+      "latencyMs": 14967
+    },
+    {
+      "id": "ati-lac-a-2026-01058",
+      "requestRef": "A-2026-01058",
+      "source": "https://telechargerdemandesaicompletees-downloadcompletedatirequests.bac-lac.gc.ca/eng/search/details/A-2026-01058?filename=A-2026-01058_01",
+      "pdfPage": 4,
+      "label": "visible in actual released package",
+      "expectedAdditionalRedactionCharacters": 0,
+      "totalCharacters": 30,
+      "flaggedCharacters": 0,
+      "suggestions": 0,
+      "matchedObservedTreatment": true,
+      "latencyMs": 15107
+    },
+    {
+      "id": "ati-lac-a-2026-00937",
+      "requestRef": "A-2026-00937",
+      "source": "https://telechargerdemandesaicompletees-downloadcompletedatirequests.bac-lac.gc.ca/eng/search/details/A-2026-00937?filename=A-2026-00937_01",
+      "pdfPage": 3,
+      "label": "visible in actual released package",
+      "expectedAdditionalRedactionCharacters": 0,
+      "totalCharacters": 108,
+      "flaggedCharacters": 0,
+      "suggestions": 0,
+      "matchedObservedTreatment": true,
+      "latencyMs": 15053
+    },
+    {
+      "id": "ati-lac-a-2026-00827",
+      "requestRef": "A-2026-00827",
+      "source": "https://telechargerdemandesaicompletees-downloadcompletedatirequests.bac-lac.gc.ca/eng/search/details/A-2026-00827?filename=A-2026-00827_01",
+      "pdfPage": 5,
+      "label": "visible in actual released package",
+      "expectedAdditionalRedactionCharacters": 0,
+      "totalCharacters": 54,
+      "flaggedCharacters": 0,
+      "suggestions": 0,
+      "matchedObservedTreatment": true,
+      "latencyMs": 14951
+    },
+    {
+      "id": "ati-lac-a-2026-00699",
+      "requestRef": "A-2026-00699",
+      "source": "https://telechargerdemandesaicompletees-downloadcompletedatirequests.bac-lac.gc.ca/eng/search/details/A-2026-00699?filename=A-2026-00699_20",
+      "pdfPage": 3,
+      "label": "visible in actual released package",
+      "expectedAdditionalRedactionCharacters": 0,
+      "totalCharacters": 63,
+      "flaggedCharacters": 0,
+      "suggestions": 0,
+      "matchedObservedTreatment": true,
+      "latencyMs": 14920
+    },
+    {
+      "id": "ati-lac-a-2026-00675",
+      "requestRef": "A-2026-00675",
+      "source": "https://telechargerdemandesaicompletees-downloadcompletedatirequests.bac-lac.gc.ca/eng/search/details/A-2026-00675?filename=A-2026-00675_03",
+      "pdfPage": 3,
+      "label": "visible in actual released package",
+      "expectedAdditionalRedactionCharacters": 0,
+      "totalCharacters": 147,
+      "flaggedCharacters": 108,
+      "suggestions": 1,
+      "matchedObservedTreatment": false,
+      "latencyMs": 15393
+    }
+  ],
+  "synthetic": [
+    {
+      "id": "labelled-name-email",
+      "expectedCharacters": 27,
+      "detectedCharacters": 11,
+      "missedCharacters": 16,
+      "extraCharacters": 0
+    },
+    {
+      "id": "email-and-unlabelled-name",
+      "expectedCharacters": 27,
+      "detectedCharacters": 16,
+      "missedCharacters": 11,
+      "extraCharacters": 0
+    },
+    {
+      "id": "unlabelled-home-address",
+      "expectedCharacters": 36,
+      "detectedCharacters": 36,
+      "missedCharacters": 0,
+      "extraCharacters": 11
+    },
+    {
+      "id": "unlabelled-date-of-birth",
+      "expectedCharacters": 13,
+      "detectedCharacters": 13,
+      "missedCharacters": 0,
+      "extraCharacters": 0
+    },
+    {
+      "id": "private-telephone",
+      "expectedCharacters": 12,
+      "detectedCharacters": 12,
+      "missedCharacters": 0,
+      "extraCharacters": 19
+    },
+    {
+      "id": "public-facts",
+      "expectedCharacters": 0,
+      "detectedCharacters": 0,
+      "missedCharacters": 0,
+      "extraCharacters": 0
+    }
+  ],
+  "errors": [],
+  "syntheticMetrics": {
+    "recall": 0.7652173913043478,
+    "precision": 0.7457627118644068
+  },
+  "publicMetrics": {
+    "evaluated": 8,
+    "expected": 8,
+    "excerptsWithExtraSuggestions": 1,
+    "extraRedactionCharacterRate": 0.1572052401746725,
+    "sensitiveSpanRecall": null
+  },
+  "livePipeline": {
+    "classification": true,
+    "emailWithheld": true,
+    "leakTester": true,
+    "leakFindings": 1,
+    "embeddingModel": "gemini-embedding-001",
+    "dimensions": 768
+  }
+}

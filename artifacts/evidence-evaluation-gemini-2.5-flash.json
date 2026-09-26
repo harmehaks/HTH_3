@@ -1,0 +1,154 @@
+{
+  "at": "2026-09-26T21:55:31.022Z",
+  "engine": "gemini",
+  "model": "gemini-2.5-flash",
+  "status": "failed",
+  "scope": "Eight real ATI released excerpts test unnecessary redaction of visible published text. Six synthetic fixtures separately test sensitive-character coverage. These are small engineering checks, not legal accuracy or independent validation. Released PDFs cannot provide gold labels for their hidden text. The public excerpts also appear in the reference library; classification does not retrieve that library.",
+  "publicReleased": [
+    {
+      "id": "ati-lac-a-2026-02577",
+      "requestRef": "A-2026-02577",
+      "source": "https://telechargerdemandesaicompletees-downloadcompletedatirequests.bac-lac.gc.ca/eng/search/details/A-2026-02577?filename=A-2026-02577_10",
+      "pdfPage": 4,
+      "label": "visible in actual released package",
+      "expectedAdditionalRedactionCharacters": 0,
+      "totalCharacters": 109,
+      "flaggedCharacters": 0,
+      "suggestions": 0,
+      "matchedObservedTreatment": true,
+      "latencyMs": 1661
+    },
+    {
+      "id": "ati-lac-a-2026-01279",
+      "requestRef": "A-2026-01279",
+      "source": "https://telechargerdemandesaicompletees-downloadcompletedatirequests.bac-lac.gc.ca/eng/search/details/A-2026-01279?filename=A-2026-01279_01",
+      "pdfPage": 4,
+      "label": "visible in actual released package",
+      "expectedAdditionalRedactionCharacters": 0,
+      "totalCharacters": 71,
+      "flaggedCharacters": 0,
+      "suggestions": 0,
+      "matchedObservedTreatment": true,
+      "latencyMs": 10262
+    },
+    {
+      "id": "ati-lac-a-2026-01235",
+      "requestRef": "A-2026-01235",
+      "source": "https://telechargerdemandesaicompletees-downloadcompletedatirequests.bac-lac.gc.ca/eng/search/details/A-2026-01235?filename=A-2026-01235_01",
+      "pdfPage": 4,
+      "label": "visible in actual released package",
+      "expectedAdditionalRedactionCharacters": 0,
+      "totalCharacters": 105,
+      "flaggedCharacters": 105,
+      "suggestions": 1,
+      "matchedObservedTreatment": false,
+      "latencyMs": 5567
+    },
+    {
+      "id": "ati-lac-a-2026-01058",
+      "requestRef": "A-2026-01058",
+      "source": "https://telechargerdemandesaicompletees-downloadcompletedatirequests.bac-lac.gc.ca/eng/search/details/A-2026-01058?filename=A-2026-01058_01",
+      "pdfPage": 4,
+      "label": "visible in actual released package",
+      "expectedAdditionalRedactionCharacters": 0,
+      "totalCharacters": 30,
+      "flaggedCharacters": 0,
+      "suggestions": 0,
+      "matchedObservedTreatment": true,
+      "latencyMs": 6539
+    },
+    {
+      "id": "ati-lac-a-2026-00937",
+      "requestRef": "A-2026-00937",
+      "source": "https://telechargerdemandesaicompletees-downloadcompletedatirequests.bac-lac.gc.ca/eng/search/details/A-2026-00937?filename=A-2026-00937_01",
+      "pdfPage": 3,
+      "label": "visible in actual released package",
+      "expectedAdditionalRedactionCharacters": 0,
+      "totalCharacters": 108,
+      "flaggedCharacters": 0,
+      "suggestions": 0,
+      "matchedObservedTreatment": true,
+      "latencyMs": 7747
+    },
+    {
+      "id": "ati-lac-a-2026-00827",
+      "requestRef": "A-2026-00827",
+      "source": "https://telechargerdemandesaicompletees-downloadcompletedatirequests.bac-lac.gc.ca/eng/search/details/A-2026-00827?filename=A-2026-00827_01",
+      "pdfPage": 5,
+      "label": "visible in actual released package",
+      "expectedAdditionalRedactionCharacters": 0,
+      "totalCharacters": 54,
+      "flaggedCharacters": 0,
+      "suggestions": 0,
+      "matchedObservedTreatment": true,
+      "latencyMs": 6954
+    },
+    {
+      "id": "ati-lac-a-2026-00699",
+      "requestRef": "A-2026-00699",
+      "source": "https://telechargerdemandesaicompletees-downloadcompletedatirequests.bac-lac.gc.ca/eng/search/details/A-2026-00699?filename=A-2026-00699_20",
+      "pdfPage": 3,
+      "label": "visible in actual released package",
+      "expectedAdditionalRedactionCharacters": 0,
+      "totalCharacters": 63,
+      "flaggedCharacters": 63,
+      "suggestions": 1,
+      "matchedObservedTreatment": false,
+      "latencyMs": 68779
+    },
+    {
+      "id": "ati-lac-a-2026-00675",
+      "requestRef": "A-2026-00675",
+      "source": "https://telechargerdemandesaicompletees-downloadcompletedatirequests.bac-lac.gc.ca/eng/search/details/A-2026-00675?filename=A-2026-00675_03",
+      "pdfPage": 3,
+      "label": "visible in actual released package",
+      "expectedAdditionalRedactionCharacters": 0,
+      "totalCharacters": 147,
+      "flaggedCharacters": 107,
+      "suggestions": 1,
+      "matchedObservedTreatment": false,
+      "latencyMs": 8005
+    }
+  ],
+  "synthetic": [
+    {
+      "id": "labelled-name-email",
+      "expectedCharacters": 27,
+      "detectedCharacters": 27,
+      "missedCharacters": 0,
+      "extraCharacters": 0
+    },
+    {
+      "id": "email-and-unlabelled-name",
+      "expectedCharacters": 27,
+      "detectedCharacters": 16,
+      "missedCharacters": 11,
+      "extraCharacters": 18
+    },
+    {
+      "id": "unlabelled-home-address",
+      "expectedCharacters": 36,
+      "detectedCharacters": 36,
+      "missedCharacters": 0,
+      "extraCharacters": 11
+    }
+  ],
+  "errors": [
+    {
+      "id": "unlabelled-date-of-birth",
+      "stage": "synthetic-classification",
+      "message": "Gemini request failed (429). Check your API key, model and quota."
+    }
+  ],
+  "syntheticMetrics": {
+    "recall": 0.8777777777777778,
+    "precision": 0.7314814814814815
+  },
+  "publicMetrics": {
+    "evaluated": 8,
+    "expected": 8,
+    "excerptsWithExtraSuggestions": 3,
+    "extraRedactionCharacterRate": 0.4002911208151383,
+    "sensitiveSpanRecall": null
+  }
+}

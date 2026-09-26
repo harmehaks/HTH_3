@@ -1,0 +1,169 @@
+{
+  "at": "2026-09-26T21:31:40.236Z",
+  "engine": "local",
+  "model": "local-pattern-rules",
+  "status": "completed",
+  "scope": "Eight real ATI released excerpts test unnecessary redaction of visible published text. Six synthetic fixtures separately test sensitive-character coverage. These are small engineering checks, not legal accuracy or independent validation. Released PDFs cannot provide gold labels for their hidden text. The public excerpts also appear in the reference library; classification does not retrieve that library.",
+  "publicReleased": [
+    {
+      "id": "ati-lac-a-2026-02577",
+      "requestRef": "A-2026-02577",
+      "source": "https://telechargerdemandesaicompletees-downloadcompletedatirequests.bac-lac.gc.ca/eng/search/details/A-2026-02577?filename=A-2026-02577_10",
+      "pdfPage": 4,
+      "label": "visible in actual released package",
+      "expectedAdditionalRedactionCharacters": 0,
+      "totalCharacters": 109,
+      "flaggedCharacters": 0,
+      "suggestions": 0,
+      "matchedObservedTreatment": true,
+      "latencyMs": 2
+    },
+    {
+      "id": "ati-lac-a-2026-01279",
+      "requestRef": "A-2026-01279",
+      "source": "https://telechargerdemandesaicompletees-downloadcompletedatirequests.bac-lac.gc.ca/eng/search/details/A-2026-01279?filename=A-2026-01279_01",
+      "pdfPage": 4,
+      "label": "visible in actual released package",
+      "expectedAdditionalRedactionCharacters": 0,
+      "totalCharacters": 71,
+      "flaggedCharacters": 0,
+      "suggestions": 0,
+      "matchedObservedTreatment": true,
+      "latencyMs": 2
+    },
+    {
+      "id": "ati-lac-a-2026-01235",
+      "requestRef": "A-2026-01235",
+      "source": "https://telechargerdemandesaicompletees-downloadcompletedatirequests.bac-lac.gc.ca/eng/search/details/A-2026-01235?filename=A-2026-01235_01",
+      "pdfPage": 4,
+      "label": "visible in actual released package",
+      "expectedAdditionalRedactionCharacters": 0,
+      "totalCharacters": 105,
+      "flaggedCharacters": 0,
+      "suggestions": 0,
+      "matchedObservedTreatment": true,
+      "latencyMs": 0
+    },
+    {
+      "id": "ati-lac-a-2026-01058",
+      "requestRef": "A-2026-01058",
+      "source": "https://telechargerdemandesaicompletees-downloadcompletedatirequests.bac-lac.gc.ca/eng/search/details/A-2026-01058?filename=A-2026-01058_01",
+      "pdfPage": 4,
+      "label": "visible in actual released package",
+      "expectedAdditionalRedactionCharacters": 0,
+      "totalCharacters": 30,
+      "flaggedCharacters": 0,
+      "suggestions": 0,
+      "matchedObservedTreatment": true,
+      "latencyMs": 0
+    },
+    {
+      "id": "ati-lac-a-2026-00937",
+      "requestRef": "A-2026-00937",
+      "source": "https://telechargerdemandesaicompletees-downloadcompletedatirequests.bac-lac.gc.ca/eng/search/details/A-2026-00937?filename=A-2026-00937_01",
+      "pdfPage": 3,
+      "label": "visible in actual released package",
+      "expectedAdditionalRedactionCharacters": 0,
+      "totalCharacters": 108,
+      "flaggedCharacters": 0,
+      "suggestions": 0,
+      "matchedObservedTreatment": true,
+      "latencyMs": 0
+    },
+    {
+      "id": "ati-lac-a-2026-00827",
+      "requestRef": "A-2026-00827",
+      "source": "https://telechargerdemandesaicompletees-downloadcompletedatirequests.bac-lac.gc.ca/eng/search/details/A-2026-00827?filename=A-2026-00827_01",
+      "pdfPage": 5,
+      "label": "visible in actual released package",
+      "expectedAdditionalRedactionCharacters": 0,
+      "totalCharacters": 54,
+      "flaggedCharacters": 0,
+      "suggestions": 0,
+      "matchedObservedTreatment": true,
+      "latencyMs": 0
+    },
+    {
+      "id": "ati-lac-a-2026-00699",
+      "requestRef": "A-2026-00699",
+      "source": "https://telechargerdemandesaicompletees-downloadcompletedatirequests.bac-lac.gc.ca/eng/search/details/A-2026-00699?filename=A-2026-00699_20",
+      "pdfPage": 3,
+      "label": "visible in actual released package",
+      "expectedAdditionalRedactionCharacters": 0,
+      "totalCharacters": 63,
+      "flaggedCharacters": 0,
+      "suggestions": 0,
+      "matchedObservedTreatment": true,
+      "latencyMs": 0
+    },
+    {
+      "id": "ati-lac-a-2026-00675",
+      "requestRef": "A-2026-00675",
+      "source": "https://telechargerdemandesaicompletees-downloadcompletedatirequests.bac-lac.gc.ca/eng/search/details/A-2026-00675?filename=A-2026-00675_03",
+      "pdfPage": 3,
+      "label": "visible in actual released package",
+      "expectedAdditionalRedactionCharacters": 0,
+      "totalCharacters": 147,
+      "flaggedCharacters": 108,
+      "suggestions": 1,
+      "matchedObservedTreatment": false,
+      "latencyMs": 1
+    }
+  ],
+  "synthetic": [
+    {
+      "id": "labelled-name-email",
+      "expectedCharacters": 27,
+      "detectedCharacters": 27,
+      "missedCharacters": 0,
+      "extraCharacters": 0
+    },
+    {
+      "id": "email-and-unlabelled-name",
+      "expectedCharacters": 27,
+      "detectedCharacters": 16,
+      "missedCharacters": 11,
+      "extraCharacters": 0
+    },
+    {
+      "id": "unlabelled-home-address",
+      "expectedCharacters": 36,
+      "detectedCharacters": 0,
+      "missedCharacters": 36,
+      "extraCharacters": 0
+    },
+    {
+      "id": "unlabelled-date-of-birth",
+      "expectedCharacters": 13,
+      "detectedCharacters": 0,
+      "missedCharacters": 13,
+      "extraCharacters": 0
+    },
+    {
+      "id": "private-telephone",
+      "expectedCharacters": 12,
+      "detectedCharacters": 12,
+      "missedCharacters": 0,
+      "extraCharacters": 0
+    },
+    {
+      "id": "public-facts",
+      "expectedCharacters": 0,
+      "detectedCharacters": 0,
+      "missedCharacters": 0,
+      "extraCharacters": 0
+    }
+  ],
+  "errors": [],
+  "syntheticMetrics": {
+    "recall": 0.4782608695652174,
+    "precision": 1
+  },
+  "publicMetrics": {
+    "evaluated": 8,
+    "expected": 8,
+    "excerptsWithExtraSuggestions": 1,
+    "extraRedactionCharacterRate": 0.1572052401746725,
+    "sensitiveSpanRecall": null
+  }
+}

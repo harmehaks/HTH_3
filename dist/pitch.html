@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Redactor · Presentation</title>
+    <link rel="icon" href="/favicon.svg" />
+    <link rel="stylesheet" href="/pitch.css" />
+  </head>
+  <body>
+    <header class="deck-header">
+      <a href="/" class="deck-brand"><img src="/favicon.svg" alt="" />redactor<span>.</span></a
+      ><span>ACCESS WITH CONFIDENCE</span><a class="demo-link" href="/">Open the workspace ↗</a>
+    </header>
+    <main>
+      <section class="slide active cover">
+        <div class="slide-copy">
+          <div class="eyebrow">A THOUGHTFUL APPROACH TO DISCLOSURE</div>
+          <h1>Access to information.<br />With a little more<br /><em>confidence.</em></h1>
+          <p>AI-assisted review. Independent leak testing.<br />Human judgment at the centre.</p>
+          <div class="cover-tags">
+            <span>Transparency</span><span>Consistency</span><span>Integrity</span>
+          </div>
+        </div>
+        <div class="cover-visual">
+          <div class="orbit"></div>
+          <article class="slide-paper">
+            <span>ACCESS TO INFORMATION</span>
+            <h3>A clearer view.</h3>
+            <div class="paper-lines"></div>
+            <div class="purple-mask">s. 19(1)</div>
+            <div class="paper-lines short"></div>
+            <div class="gold-mask">s. 21(1)(a)</div>
+            <div class="paper-lines"></div>
+            <div class="paper-check">✓ &nbsp; Ready for a human decision</div>
+          </article>
+          <span class="visual-tag">Every decision has a reason.</span>
+        </div>
+      </section>
+      <section class="slide">
+        <div class="eyebrow">THE PERSON ↔ GOVERNMENT INTERACTION</div>
+        <h1>Behind every request,<br /><em>a right to know.</em></h1>
+        <p class="intro">
+          A citizen asks for records. An officer decides what can be disclosed.<br />Redactor
+          assists the review that connects them.
+        </p>
+        <div class="three-cards">
+          <article>
+            <span class="step-num">01</span>
+            <h2>The requester</h2>
+            <p>Citizens, journalists and researchers need accessible records and clear progress.</p>
+          </article>
+          <article>
+            <span class="step-num">02</span>
+            <h2>The officer</h2>
+            <p>
+              Every page needs careful review: sensitive information, statutory conditions and
+              disclosure decisions.
+            </p>
+          </article>
+          <article>
+            <span class="step-num">03</span>
+            <h2>The public</h2>
+            <p>
+              More transparent decisions and a response that explains the basis for withholding.
+            </p>
+          </article>
+        </div>
+        <div class="slide-note">
+          The Act provides a response timeline subject to its conditions and extensions. The
+          prototype tracks an indicative 30-day target.
+        </div>
+      </section>
+      <section class="slide">
+        <div class="eyebrow">THREE COMPONENTS. ONE REVIEW WORKSPACE.</div>
+        <h1>A first pass.<br />Then <em>a second perspective.</em></h1>
+        <div class="architecture">
+          <article>
+            <span class="architecture-label">CORE ENGINE</span>
+            <h2>Find & explain</h2>
+            <p>Suggest sensitive spans, confidence and a statutory reason.</p>
+            <span class="tech-tag">Gemini / local rules</span>
+          </article>
+          <span class="flow-arrow">→</span>
+          <article>
+            <span class="architecture-label">INDEPENDENT TESTER</span>
+            <h2>Challenge the release</h2>
+            <p>Look for contextual clues using only the redacted output.</p>
+            <span class="tech-tag">Separate analysis pass</span>
+          </article>
+          <span class="flow-arrow">→</span>
+          <article>
+            <span class="architecture-label">CONSISTENCY ENGINE</span>
+            <h2>Learn from earlier records</h2>
+            <p>Find similar published language and flag apparent differences.</p>
+            <span class="tech-tag">Embeddings + pgvector</span>
+          </article>
+        </div>
+        <div class="decision-strip">
+          Original record → candidate release → integrity findings →
+          <strong>officer approval</strong> → requester
+        </div>
+      </section>
+      <section class="slide">
+        <div class="eyebrow">WOW #1 · THE MOSAIC EFFECT</div>
+        <h1>A hidden name can still<br /><em>leave a visible trail.</em></h1>
+        <div class="mosaic">
+          <article>
+            <div class="record-label">CANDIDATE REDACTED RECORD</div>
+            <p>Employee name: <mark>[REDACTED · s. 19(1)]</mark></p>
+            <p>Personal contact: <mark>[REDACTED · s. 19(1)]</mark></p>
+            <blockquote>
+              The only officer leading the Northern Region pilot received the 2025 Northstar service
+              award and can be identified in the contact directory.
+            </blockquote>
+            <small>Synthetic demonstration record.</small>
+          </article>
+          <article class="mosaic-finding">
+            <span class="finding-label">A CONTEXTUAL CLUE</span>
+            <h2>The words around the redaction matter.</h2>
+            <p>
+              An independent tester identifies a possible reconstruction path. The officer can sever
+              that context, rerun checks and record a rationale.
+            </p>
+            <div class="independence">
+              The tester never receives the original.<br />Guess verification runs separately.
+            </div>
+          </article>
+        </div>
+      </section>
+      <section class="slide">
+        <div class="eyebrow">WOW #2 · CROSS-REQUEST CONSISTENCY</div>
+        <h1>Similar language.<br /><em>A decision worth revisiting.</em></h1>
+        <div class="consistency">
+          <article>
+            <span class="record-label">CURRENT SUGGESTION</span>
+            <h2>Withhold under s. 21(1)(a)?</h2>
+            <blockquote>
+              We recommend extending the pilot to three additional regional offices before a
+              national rollout…
+            </blockquote>
+            <span class="finding-label">Officer review required</span>
+          </article>
+          <article>
+            <span class="record-label">PRIOR REFERENCE</span>
+            <h2>Similar language disclosed</h2>
+            <blockquote>
+              We recommend extending the pilot to three additional regional offices before a
+              national rollout…
+            </blockquote>
+            <span class="tech-tag">A-2025-04521 · Synthetic demo reference</span>
+          </article>
+        </div>
+        <p class="slide-note">
+          A similarity match is a prompt to assess context, exceptions, age and discretion. It is
+          not a legal precedent or an automatic decision.
+        </p>
+      </section>
+      <section class="slide">
+        <div class="eyebrow">HUMAN JUDGMENT, BUILT INTO THE WORKFLOW</div>
+        <h1>Assistance is useful.<br /><em>Accountability is essential.</em></h1>
+        <div class="review-principles">
+          <article>
+            <span>✓</span>
+            <div>
+              <h2>Every suggestion gets a decision.</h2>
+              <p>Approve withholding, disclose with a rationale, or change the legal category.</p>
+            </div>
+          </article>
+          <article>
+            <span>✓</span>
+            <div>
+              <h2>Every finding gets a response.</h2>
+              <p>Document mitigation or a reasoned assessment of the remaining risk.</p>
+            </div>
+          </article>
+          <article>
+            <span>✓</span>
+            <div>
+              <h2>Changed output gets fresh checks.</h2>
+              <p>Release validates the hash of the exact candidate text reviewed.</p>
+            </div>
+          </article>
+          <article>
+            <span>✓</span>
+            <div>
+              <h2>The requester receives only the release.</h2>
+              <p>Originals stay officer-only. Exported PDFs contain replaced text, not overlays.</p>
+            </div>
+          </article>
+        </div>
+      </section>
+      <section class="slide">
+        <div class="eyebrow">CONNECTED WHERE IT COUNTS</div>
+        <h1>Real integrations.<br /><em>A working local fallback.</em></h1>
+        <div class="integration-deck">
+          <article>
+            <span>G</span>
+            <h2>Gemini</h2>
+            <p>Classification, legal explanations, independent leak testing and embeddings.</p>
+          </article>
+          <article>
+            <span>A</span>
+            <h2>Auth0</h2>
+            <p>Authenticated officer/requester roles and server-side permissions.</p>
+          </article>
+          <article>
+            <span>T</span>
+            <h2>Tiger Data</h2>
+            <p>Persistent PostgreSQL records with pgvector similarity queries.</p>
+          </article>
+          <article>
+            <span>E</span>
+            <h2>ElevenLabs</h2>
+            <p>On-demand spoken briefing of review priorities.</p>
+          </article>
+        </div>
+        <div class="slide-note">
+          Live integrations require account credentials. Local rules, SQLite, demo sessions and
+          browser speech provide an explicitly labelled offline demonstration.
+        </div>
+      </section>
+      <section class="slide closing">
+        <div class="eyebrow">THE NEXT CHAPTER</div>
+        <h1>More transparency.<br />Less busywork.<br /><em>Thoughtfully disclosed.</em></h1>
+        <p class="intro">A complete prototype to review, test and build on.</p>
+        <div class="next-steps">
+          <span>01 &nbsp; Validate with ATIP officers</span
+          ><span>02 &nbsp; Evaluate on independently adjudicated records</span
+          ><span>03 &nbsp; Establish operational data and deployment controls</span>
+        </div>
+        <a class="closing-demo" href="/">Explore the working prototype ↗</a>
+        <div class="source-links">
+          Sources:
+          <a href="https://laws-lois.justice.gc.ca/eng/acts/A-1/" target="_blank" rel="noreferrer"
+            >Access to Information Act</a
+          >
+          ·
+          <a
+            href="https://international.canada.ca/en/global-affairs/corporate/transparency/briefing-documents/briefing-books"
+            target="_blank"
+            rel="noreferrer"
+            >Public briefing books</a
+          >. Synthetic examples are labelled; no validated time-saving or accuracy claims.
+        </div>
+      </section>
+    </main>
+    <footer class="deck-footer">
+      <span id="slide-name">A clearer path</span>
+      <div class="deck-progress"><i id="progress"></i></div>
+      <div class="deck-controls">
+        <button id="previous" aria-label="Previous slide">←</button><span id="counter">01 / 08</span
+        ><button id="next" aria-label="Next slide">→</button
+        ><button id="print" aria-label="Print presentation">Print</button>
+      </div>
+    </footer>
+    <script src="/pitch.js"></script>
+  </body>
+</html>

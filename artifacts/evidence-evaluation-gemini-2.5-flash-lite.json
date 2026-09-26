@@ -1,0 +1,62 @@
+{
+  "at": "2026-09-26T22:01:11.043Z",
+  "engine": "gemini",
+  "model": "gemini-2.5-flash-lite",
+  "status": "failed",
+  "scope": "Eight real ATI released excerpts test unnecessary redaction of visible published text. Six synthetic fixtures separately test sensitive-character coverage. These are small engineering checks, not legal accuracy or independent validation. Released PDFs cannot provide gold labels for their hidden text. The public excerpts also appear in the reference library; classification does not retrieve that library.",
+  "publicReleased": [],
+  "synthetic": [],
+  "errors": [
+    {
+      "id": "ati-lac-a-2026-02577",
+      "stage": "public-classification",
+      "message": "Gemini request failed (404). Check your API key, model and quota."
+    },
+    {
+      "id": "ati-lac-a-2026-01279",
+      "stage": "public-classification",
+      "message": "Gemini request failed (404). Check your API key, model and quota."
+    },
+    {
+      "id": "ati-lac-a-2026-01235",
+      "stage": "public-classification",
+      "message": "Gemini request failed (404). Check your API key, model and quota."
+    },
+    {
+      "id": "ati-lac-a-2026-01058",
+      "stage": "public-classification",
+      "message": "Gemini request failed (404). Check your API key, model and quota."
+    },
+    {
+      "id": "ati-lac-a-2026-00937",
+      "stage": "public-classification",
+      "message": "Gemini request failed (404). Check your API key, model and quota."
+    },
+    {
+      "id": "ati-lac-a-2026-00827",
+      "stage": "public-classification",
+      "message": "Gemini request failed (404). Check your API key, model and quota."
+    },
+    {
+      "id": "ati-lac-a-2026-00699",
+      "stage": "public-classification",
+      "message": "Gemini request failed (404). Check your API key, model and quota."
+    },
+    {
+      "id": "ati-lac-a-2026-00675",
+      "stage": "public-classification",
+      "message": "Gemini request failed (404). Check your API key, model and quota."
+    },
+    {
+      "id": "labelled-name-email",
+      "stage": "synthetic-classification",
+      "message": "Gemini request failed (404). Check your API key, model and quota."
+    },
+    {
+      "id": "email-and-unlabelled-name",
+      "stage": "synthetic-classification",
+      "message": "Gemini request failed (404). Check your API key, model and quota."
+    }
+  ],
+  "stoppedReason": "Stopped after repeated model-not-found responses; no fallback."
+}

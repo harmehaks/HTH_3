@@ -1,0 +1,50 @@
+{
+  "engine": "Local pattern rules",
+  "scope": "Small synthetic engineering benchmark with deliberately difficult cases. Labels express fixture intent, not legal determinations. Not independent validation and not a Gemini evaluation.",
+  "recall": 0.4782608695652174,
+  "precision": 1,
+  "results": [
+    {
+      "id": "labelled-name-email",
+      "expectedCharacters": 27,
+      "detectedCharacters": 27,
+      "missedCharacters": 0,
+      "extraCharacters": 0
+    },
+    {
+      "id": "email-and-unlabelled-name",
+      "expectedCharacters": 27,
+      "detectedCharacters": 16,
+      "missedCharacters": 11,
+      "extraCharacters": 0
+    },
+    {
+      "id": "unlabelled-home-address",
+      "expectedCharacters": 36,
+      "detectedCharacters": 0,
+      "missedCharacters": 36,
+      "extraCharacters": 0
+    },
+    {
+      "id": "unlabelled-date-of-birth",
+      "expectedCharacters": 13,
+      "detectedCharacters": 0,
+      "missedCharacters": 13,
+      "extraCharacters": 0
+    },
+    {
+      "id": "private-telephone",
+      "expectedCharacters": 12,
+      "detectedCharacters": 12,
+      "missedCharacters": 0,
+      "extraCharacters": 0
+    },
+    {
+      "id": "public-facts",
+      "expectedCharacters": 0,
+      "detectedCharacters": 0,
+      "missedCharacters": 0,
+      "extraCharacters": 0
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "at": "2026-09-26T22:10:27.973Z",
+  "classification": "Gemini",
+  "model": "gemini-3.1-flash-lite",
+  "storage": "SQLite",
+  "embeddings": "Gemini embeddings",
+  "reindexed": 40,
+  "embeddingModels": [
+    "gemini-embedding-001"
+  ]
+}

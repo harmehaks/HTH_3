@@ -1,0 +1,20 @@
+{
+  "at": "2026-09-26T21:49:51.707Z",
+  "status": "passed",
+  "scope": "Local Linux containers with PostgreSQL 17 and pgvector. Not hosted Tiger Data, Vultr, or live AI verification.",
+  "imageId": "sha256:0789eee9a0579b89c7037eb0fcf0027fd172b44d61bcad2bf5b26a7e9f933591",
+  "checks": {
+    "uid": 1000,
+    "health": true,
+    "builtUI": true,
+    "atiReferences": 8,
+    "publishedComparison": true,
+    "pdfExport": true,
+    "jsonbPersistence": true,
+    "pgvectorVersion": "0.8.6",
+    "cosineSearch": true,
+    "embeddingModelIsolation": true,
+    "hnswIndex": true
+  },
+  "cleanup": "Temporary containers and network removed"
+}
