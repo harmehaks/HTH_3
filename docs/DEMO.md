@@ -1,24 +1,26 @@
 # Demonstration and rehearsal
 
+**New evidence beat:** Open Requests → **Published ATI comparison — fisheries assistance** → **View comparison**. Show the actual A-2026-00675 source, PDF page 3, alongside the local rule's extra withholding suggestion. This is a re-review of already published text, not an unreleased original. The reference is pre-attached. Disclose the suggestion with a rationale and show the refreshed integrity result. See [EVIDENCE.md](EVIDENCE.md) for the eight real ATI sources and exact claim boundaries.
+
+Use `npm run evaluate` for real-public and synthetic results reported separately. The original regex fixtures are now `npm run evaluate:smoke`; do not present those as accuracy. Run `npm run evaluate:gemini` before claiming live Gemini. Missing credentials are a blocked result, not a fallback success.
+
 Open http://127.0.0.1:5173 after `npm run dev`. For the slide deck, open http://127.0.0.1:5173/pitch.html. Arrow keys, Space, and the navigation buttons move through slides; print creates a handout.
 
-## A six-minute presentation
+## A five-minute presentation
 
-**0:00–0:40 — The interaction.** A citizen asks for government records. An ATIP officer prepares the response. Redactor assists the officer so that information can move through review with clearer explanations, consistent treatment, and an extra disclosure check. Do not quote backlog/compliance improvement numbers from the brief as measured results of this app.
+**0:00?0:30 ? The problem.** A hidden name can still leave a visible identity. Show the interactive Disclosure Lens on the dashboard. Label it a synthetic illustration, not a live AI result.
 
-**0:40–1:15 — The workspace.** Show the queue, target dates, pending reviews and actual stored-request statistics. Explain that all seeded requests and identities are fictional. Show the real public starter references separately in Release library.
+**0:30?1:10 ? A real review workflow.** Open the border-services record. Show a suggestion, its source and an officer decision. Explain that local mode uses pattern rules; only claim Gemini when a fresh live upload has been verified.
 
-**1:15–2:00 — A decision with a reason.** Open the border-services modernization record. Select advice/recommendations. Point out the 78% suggestion confidence and the need to assess statutory conditions. Switch Original → Redacted → Compare. Show the source section link.
+**1:10?2:20 ? The central demonstration.** Open Integrity. Show the identifying context left after the name was removed. Explain the independent tester only receives the candidate release. Add a manual redaction for the full identifying sentence. Show the fresh check. If a selection includes other suggestions, explicitly replace them; previous decisions remain in stored history.
 
-**2:00–3:00 — The red-team moment.** On Integrity, show the visible sentence about the only Northern Region pilot officer and the contact directory. The hidden name alone is not enough: remaining context could identify that person. Explain that the tester saw only redacted output. In local mode this is a deterministic contextual-risk check, not a guessed identity. With Gemini, show an actual returned inference and its separate exact/partial/unverified scoring if available.
+**2:20?3:00 ? Preserve useful information.** Show the disclosure balance and four server-checked release gates. The percentage measures source characters retained, never legal correctness or safety. Show a previous-release conflict and its reference if time permits.
 
-**3:00–3:45 — Institutional memory.** Show the similar recommendation in the prior synthetic request. Explain that this is a possible consistency conflict, not an automatic instruction to disclose. Then open a real source-linked proactive publication in the library. The sixteen short public excerpts are real; the easy demo contradiction is explicitly synthetic.
+**3:00?4:15 ? Complete the citizen's journey.** Rehearse with a short synthetic contact record from README. Approve suggestions, confirm review and release. Show the receipt, then switch to the requester and download the redacted text/PDF. Keep the public outcome visible.
 
-**3:45–4:30 — Address the finding.** Add a manual redaction for the full identifying sentence. Show the automatically refreshed integrity results and the mitigated contextual finding. The rerun button is available for another pass. Resolve remaining conflicts with an explicit contextual rationale.
+**4:15?4:45 ? Evidence and limits.** Report passing regression tests and the actual span benchmark, including missed cases. Explain that OCR, preserved PDF layout and account-backed integrations need further work or verification. Do not claim measured time savings without a timed comparison.
 
-**4:30–5:20 — Release and requester access.** For a predictable quick finish, create the simple contact record from README rather than approving the complex record hastily. Approve its two personal-information suggestions, confirm full review, approve release, switch to requester view and download the PDF. Show that the aggregate public outcome remains visible while the synthetic private name/email is removed.
-
-**5:20–6:00 — Voice and accountability.** Switch back. Play the spoken briefing if supported. Show Activity log and its hash-chain status. Explain the live sponsor configurations and the prototype limits candidly.
+**4:45?5:00 ? Close.** ?Help officers release useful information while catching what ordinary redaction can leave exposed.? Keep the next three minutes available for questions about architecture, limits and technical decisions.
 
 ## Before the demonstration
 

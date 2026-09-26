@@ -1,4 +1,8 @@
 import { localEmbedding, embed } from './engine.js';
+import { readFileSync } from 'node:fs';
+export const atiCorpus = JSON.parse(
+  readFileSync(new URL('../samples/ati-releases.json', import.meta.url), 'utf8'),
+);
 const root =
   'https://international.canada.ca/en/global-affairs/corporate/transparency/briefing-documents/briefing-books/';
 // Short exact excerpts checked against the official published pages on 2026-09-26.
@@ -85,7 +89,7 @@ const sources = [
     'While the last three decades saw dramatic reductions in global poverty, not everyone has benefitted equally.',
   ],
 ];
-export const publicCorpus = sources.map(([slug, title, text]) => ({
+export const proactiveCorpus = sources.map(([slug, title, text]) => ({
   id: `public-${slug}`,
   requestRef: `PD-GAC-${slug}`,
   title,
@@ -97,6 +101,7 @@ export const publicCorpus = sources.map(([slug, title, text]) => ({
   sourceType: 'proactive_publication',
   verifiedAt: '2026-09-26',
 }));
+export const publicCorpus = [...proactiveCorpus, ...atiCorpus];
 export async function importPublicCorpus(store, { live = false } = {}) {
   let count = 0;
   for (const item of publicCorpus) {

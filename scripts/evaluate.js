@@ -1,6 +1,6 @@
 import { readFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import { localClassify } from '../server/engine.js';
-import { publicCorpus } from '../server/public-corpus.js';
+import { proactiveCorpus as publicCorpus } from '../server/public-corpus.js';
 const cases = [
   ...JSON.parse(readFileSync('samples/labeled.json', 'utf8')),
   ...publicCorpus.map((c) => ({
@@ -37,13 +37,11 @@ const report = {
   truePositives: tp,
   falsePositives: fp,
   falseNegatives: fn,
-  precision: tp / (tp + fp || 1),
-  recall: tp / (tp + fn || 1),
   results,
 };
 mkdirSync('artifacts', { recursive: true });
 writeFileSync('artifacts/evaluation.json', JSON.stringify(report, null, 2));
 console.log(
-  `${report.passed}/${report.cases} smoke fixtures matched their category labels. Precision ${report.precision.toFixed(2)}, recall ${report.recall.toFixed(2)}.\n${report.scope}\nFull report: artifacts/evaluation.json`,
+  `${report.passed}/${report.cases} smoke fixtures matched their category labels. This is a regression check, not accuracy.\n${report.scope}\nFull report: artifacts/evaluation.json`,
 );
 if (report.passed !== report.cases) process.exitCode = 1;

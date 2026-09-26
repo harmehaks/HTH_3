@@ -1,9 +1,7 @@
 import { chromium } from '@playwright/test';
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
-const edge = 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe';
-const executablePath =
-  process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE || (existsSync(edge) ? edge : undefined);
-const browser = await chromium.launch(executablePath ? { executablePath } : {});
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { browserOptions } from './browser-options.js';
+const browser = await chromium.launch(browserOptions());
 try {
   const page = await browser.newPage({
       viewport: { width: 1440, height: 1000 },

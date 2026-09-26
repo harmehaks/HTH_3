@@ -1,5 +1,9 @@
 # Redactor
 
+Evidence update: [real ATI sources, comparison demo, evaluation limits and sponsor claims](docs/EVIDENCE.md). Eight distinct completed ATI requests now have official PDF sources and page-level provenance. `npm run evaluate` reports public-release and synthetic results separately; `npm run evaluate:gemini` requires a configured live key.
+
+Disclosure studio update: see [upgrade notes](docs/UPGRADE_NOTES.md) for the release checklist, overlap replacement, disclosure balance, receipt export, regression results and prioritized next steps. Run `npm run evaluate:spans` for the additional synthetic span benchmark.
+
 A complete working prototype for AI-assisted Access to Information review. Redactor combines an officer dashboard, a document review workspace, an independent contextual leak tester, cross-request consistency checks, a requester portal, and spoken briefings.
 
 The application runs locally without accounts or API keys. Optional live integrations are implemented for **Gemini, Auth0, Tiger Data/PostgreSQL with pgvector, and ElevenLabs**. Live integrations require your credentials and must be verified against your own accounts. This prototype is not a government submission portal or an approved system for operational government records.
@@ -13,14 +17,18 @@ Requires **Node.js 22.13 or newer** and npm. This workspace was tested with Node
 From PowerShell:
 
 ```powershell
-Set-Location 'C:\Users\harme\OneDrive\Desktop\hth3'
+Set-Location 'E:\Redactor'
 npm install
 npm run dev
 ```
 
+On macOS/Linux, open a terminal in the repository directory and run `npm ci`, then `npm run dev`. To create an environment file: `cp .env.example .env`.
+
+For browser checks on any platform, run `npx playwright install chromium` once, then `npm run test:e2e`. Optional overrides: `PLAYWRIGHT_CHANNEL` or `PLAYWRIGHT_CHROMIUM_EXECUTABLE`.
+
 Open **http://127.0.0.1:5173**. The API runs at http://127.0.0.1:3001.
 
-No `.env` file is required for the local demo. It starts with nine synthetic access requests, sixteen synthetic release excerpts, and sixteen short excerpts from verified government-published briefing books. Requests and decisions persist in `data/redactor.sqlite`. Fonts and illustrations are served locally; the UI does not require a third-party font service.
+No `.env` file is required for the local demo. It starts with nine synthetic access requests, one re-review exercise with a pre-attached real ATI reference, sixteen synthetic release excerpts, sixteen proactive-publication excerpts, and eight excerpts from distinct completed ATI responses. Requests and decisions persist in `data/redactor.sqlite`. Fonts and illustrations are served locally; the UI does not require a third-party font service.
 
 If a server is already running in this workspace, open the URL directly. Press **Ctrl+C** in its terminal to stop it. Do not run a second copy on the same ports.
 
@@ -40,7 +48,7 @@ If a server is already running in this workspace, open the URL directly. Press *
 | Mosaic effect               | Contextual identification findings with visible clues, severity, officer rationale and fresh checks after changes                           |
 | Consistency                 | 768-dimensional similarity search; pgvector with PostgreSQL, normalized word vectors locally, Gemini embeddings when configured             |
 | Prior release references    | Specific source/reference IDs, excerpts, similarity values, treatment, and contextual officer assessment                                    |
-| Real public starter corpus  | Sixteen source-linked proactive publications; references use `PD-GAC-…`, not invented ATI request numbers                                   |
+| Real public starter corpus  | Eight distinct completed ATI releases with page provenance, plus sixteen separately labelled proactive publications                         |
 | Original/release comparison | Original vs candidate; candidate vs an officer-attached actual published release with its source URL                                        |
 | Officer dashboard           | Stored-request counts, pending suggestions, release totals, overdue targets, throughput, risk and open findings                             |
 | Requester portal            | Create a request, follow progress, and download only the requester’s own approved redacted records                                          |
@@ -82,6 +90,8 @@ Approve both suggested personal-information spans, attest review, and release. T
 
 ## 4. Connect Gemini
 
+Live verification completed with Gemini 3.1 Flash Lite; see [results and limits](docs/EVIDENCE.md). If a configured cloud database is unavailable, use `npm run start:local` to retain live Gemini with local SQLite. Normal `npm start` uses the configured database URL.
+
 Create your own API key, then create a local environment file:
 
 ```powershell
@@ -92,7 +102,7 @@ Set:
 
 ```dotenv
 GEMINI_API_KEY=your-key
-GEMINI_MODEL=gemini-2.5-flash
+GEMINI_MODEL=gemini-3.1-flash-lite
 GEMINI_EMBEDDING_MODEL=gemini-embedding-001
 ```
 
@@ -170,13 +180,13 @@ ELEVENLABS_API_KEY=your-key
 ELEVENLABS_VOICE_ID=your-voice-id
 ```
 
-Restart. Overview → **Listen to briefing** uses ElevenLabs audio. Without credentials it uses browser speech when supported and always displays the briefing text. Only a summary of queue counts is sent to the voice service, not original records or withheld spans.
+Restart. Overview → **Listen to briefing** uses ElevenLabs audio. Without credentials it uses browser speech when supported and always displays the briefing text. Queue counts, the two highest-priority request IDs and an unresolved reference ID are sent to the voice service, not original records or withheld spans.
 
 Official reference: [Create speech endpoint](https://elevenlabs.io/docs/api-reference/text-to-speech/convert).
 
 ## 8. Add real release data and a comparison
 
-The default public set uses short, source-checked excerpts from sixteen [Global Affairs Canada briefing books](https://international.canada.ca/en/global-affairs/corporate/transparency/briefing-documents/briefing-books). They are **proactive publications**, not sixteen completed ATI request responses. The synthetic reference set is separate. Older published figures are historical context, not current factual assertions.
+The public starter set includes eight distinct completed ATI requests from Library and Archives Canada with official PDF links, page numbers and source hashes in `samples/ati-releases.json`. Sixteen proactive publications and sixteen synthetic excerpts remain separately labelled. See [EVIDENCE.md](docs/EVIDENCE.md).
 
 To add completed ATI records:
 
@@ -207,7 +217,7 @@ Optionally set `PLAYWRIGHT_CHROMIUM_EXECUTABLE` to a Chromium-compatible browser
 
 Tests cover classification validation, output sanitization, independent-tester input, reconstruction scoring, similarity conflicts, ownership/role restrictions, PDF content extraction, release blockers, stale checks, rationale requirements, manual redactions, file uploads, origin checks, hash-chain verification, navigation, mobile layout, themes, and requester release viewing.
 
-`npm run evaluate` produces `artifacts/evaluation.json`. It is a **category-level smoke evaluation** with sixteen synthetic fixtures and sixteen public excerpts. It is not measured performance on an independently adjudicated legal test set, and its numbers must not be used to claim real-world accuracy.
+`npm run evaluate` produces `artifacts/evidence-evaluation-local.json`: additional withholding on eight real ATI excerpts, separately from sensitive-character coverage on six synthetic fixtures. `npm run evaluate:gemini` exercises actual classification, leak testing and embeddings, or reports missing credentials as blocked. Original category fixtures are retained under `npm run evaluate:smoke`. None is an independent legal accuracy benchmark.
 
 Browser screenshots are written to `artifacts/` for the desktop dashboard, mobile dashboard, dark theme, review workspace, and requester release.
 
@@ -225,6 +235,8 @@ Open **http://127.0.0.1:3001**. If Auth0 is enabled, update its callback/logout 
 With that server running, use `npm run verify:production` in a second terminal to check the compiled dashboard, local font loading under security headers, presentation navigation, and API error handling. The report and screenshots are saved in `artifacts/`.
 
 Container deployment files are supplied. Docker is not required for the local app. For a local PostgreSQL demonstration:
+
+Run `npm run verify:container` with Docker running to build the production image and verify it against an isolated PostgreSQL/pgvector instance. It checks persistence, similarity search, the ATI demo, PDF export and non-root execution, then removes its temporary containers and network. The report is `artifacts/container-verification.json`; this is local verification, not evidence of a hosted deployment.
 
 ```powershell
 Copy-Item -LiteralPath .env.example -Destination .env
@@ -254,7 +266,7 @@ server/app.js              API, access controls, release workflow and exports
 server/engine.js            Classification, leak test, scoring and consistency
 server/legal.js             Six categories and statutory links
 server/store.js              SQLite / PostgreSQL and vector search
-server/public-corpus.js      Sixteen verified public starter excerpts
+server/public-corpus.js      Eight ATI releases plus sixteen proactive-publication excerpts
 server/audit.js              Canonical hashing and activity verification
 server/seed.js               Synthetic requests and references
 samples/labeled.json         Synthetic category smoke fixtures

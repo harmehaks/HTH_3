@@ -8,6 +8,7 @@ import { randomUUID, createHash } from 'node:crypto';
 import { resolve, join } from 'node:path';
 import { existsSync } from 'node:fs';
 import { auditHash, verifyAudit } from './audit.js';
+import { releaseReadiness } from './readiness.js';
 import { importPublicCorpus } from './public-corpus.js';
 import { buildBriefing } from './briefing.js';
 import { categories, category } from './legal.js';
@@ -17,6 +18,7 @@ const wrap = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).cat
 const fail = (status, message) => Object.assign(new Error(message), { status });
 const clean = (s, max = 250) => (typeof s === 'string' ? s.trim().slice(0, max) : '');
 const hash = (s) => createHash('sha256').update(s).digest('hex');
+const presentRecord = (r) => ({ ...r, readiness: releaseReadiness(r) });
 export function createApp(store, { demo = process.env.DEMO_MODE !== 'false', test = false } = {}) {
   const app = express(),
     authEnabled = Boolean(
@@ -276,7 +278,7 @@ export function createApp(store, { demo = process.env.DEMO_MODE !== 'false', tes
           documents: r.status === 'released' ? r.release.documents : [],
         });
       }
-      res.json(r);
+      res.json(presentRecord(r));
     }),
   );
   app.post(
@@ -311,7 +313,7 @@ export function createApp(store, { demo = process.env.DEMO_MODE !== 'false', tes
         };
       await store.put('request', r);
       await audit(req, r.id, 'Request received', title);
-      res.status(201).json(r);
+      res.status(201).json(presentRecord(r));
     }),
   );
   const upload = multer({
@@ -393,7 +395,7 @@ export function createApp(store, { demo = process.env.DEMO_MODE !== 'false', tes
           'Document analyzed',
           `${name}: ${d.spans.length} suggestions, ${check.leaks.length} leak findings, ${check.conflicts.length} consistency findings.`,
         );
-        res.status(201).json(r);
+        res.status(201).json(presentRecord(r));
       }),
     ),
   );
@@ -431,7 +433,7 @@ export function createApp(store, { demo = process.env.DEMO_MODE !== 'false', tes
           `${d.name}: ${decision}; s. ${category(cat).section}${note ? `; ${note}` : ''}`,
         );
         if (contentChanged) await refreshDocument(req, r, d);
-        res.json(r);
+        res.json(presentRecord(r));
       }),
     ),
   );
@@ -459,7 +461,23 @@ export function createApp(store, { demo = process.env.DEMO_MODE !== 'false', tes
           reviewedAt: new Date().toISOString(),
         };
         try {
-          d.spans = validateSpans(d.text, [...d.spans, s]);
+          const overlaps = d.spans.filter((old) => s.start < old.end && s.end > old.start);
+          if (req.body.replaceOverlaps === true) {
+            if (overlaps.some((old) => s.start > old.start || s.end < old.end))
+              throw new Error('Replacement must fully cover each overlapping suggestion.');
+            const remaining = d.spans.filter((old) => !overlaps.includes(old));
+            const next = validateSpans(d.text, [...remaining, s]);
+            d.supersededSpans = [
+              ...(d.supersededSpans || []),
+              ...overlaps.map((old) => ({
+                ...old,
+                replacedBy: s.id,
+                replacedAt: new Date().toISOString(),
+                replacementNote: note,
+              })),
+            ];
+            d.spans = next;
+          } else d.spans = validateSpans(d.text, [...d.spans, s]);
         } catch (e) {
           throw fail(400, e.message);
         }
@@ -473,7 +491,7 @@ export function createApp(store, { demo = process.env.DEMO_MODE !== 'false', tes
           `${d.name}: s. ${category(s.category).section}; ${note}`,
         );
         await refreshDocument(req, r, d);
-        res.status(201).json(r);
+        res.status(201).json(presentRecord(r));
       }),
     ),
   );
@@ -485,9 +503,24 @@ export function createApp(store, { demo = process.env.DEMO_MODE !== 'false', tes
         const r = await getRequest(req.params.id);
         mutable(r);
         const corpus = await store.all('corpus');
-        const checks = await Promise.all(
-          r.documents.map((d) => integrity(d.text, d.spans, corpus, store)),
-        );
+        r.documents.forEach((d) => {
+          d.integrity = null;
+          d.attested = false;
+        });
+        await store.put('request', r);
+        let checks;
+        try {
+          checks = await Promise.all(
+            r.documents.map((d) => integrity(d.text, d.spans, corpus, store)),
+          );
+        } catch (error) {
+          r.documents.forEach((d) => {
+            d.integrityError = 'Integrity check failed. Retry before release.';
+          });
+          await store.put('request', r);
+          await audit(req, r.id, 'Integrity checks failed', clean(error.message, 400));
+          throw error;
+        }
         r.documents.forEach((d, i) => {
           d.integrity = checks[i];
           delete d.integrityError;
@@ -499,7 +532,7 @@ export function createApp(store, { demo = process.env.DEMO_MODE !== 'false', tes
           'Integrity checks completed',
           `${r.documents.length} documents checked against candidate releases.`,
         );
-        res.json(r);
+        res.json(presentRecord(r));
       }),
     ),
   );
@@ -527,7 +560,7 @@ export function createApp(store, { demo = process.env.DEMO_MODE !== 'false', tes
         d.attested = false;
         await store.put('request', r);
         await audit(req, r.id, 'Integrity finding resolved', note);
-        res.json(r);
+        res.json(presentRecord(r));
       }),
     ),
   );
@@ -544,7 +577,7 @@ export function createApp(store, { demo = process.env.DEMO_MODE !== 'false', tes
         d.attestedBy = req.user.name;
         await store.put('request', r);
         await audit(req, r.id, 'Full document review confirmed', d.name);
-        res.json(r);
+        res.json(presentRecord(r));
       }),
     ),
   );
@@ -555,16 +588,8 @@ export function createApp(store, { demo = process.env.DEMO_MODE !== 'false', tes
       locked(req.params.id, async () => {
         const r = await getRequest(req.params.id);
         mutable(r);
-        if (!r.documents.length) throw fail(409, 'Add at least one document before release.');
-        for (const d of r.documents) {
-          if (d.spans.some((s) => s.decision === 'pending'))
-            throw fail(409, 'Review every suggested redaction before release.');
-          if (!d.attested) throw fail(409, 'Confirm a full document review for every document.');
-          if (!d.integrity || d.integrity.outputHash !== hash(renderRedacted(d.text, d.spans)))
-            throw fail(409, 'Run integrity checks on the current release first.');
-          if ([...d.integrity.leaks, ...d.integrity.conflicts].some((f) => !f.resolved))
-            throw fail(409, 'Resolve every integrity finding before release.');
-        }
+        const readiness = releaseReadiness(r);
+        if (!readiness.ready) throw fail(409, readiness.blockers[0]);
         r.status = 'released';
         r.releasedAt = new Date().toISOString();
         r.releasedBy = req.user.name;
@@ -586,7 +611,7 @@ export function createApp(store, { demo = process.env.DEMO_MODE !== 'false', tes
           'Release approved',
           `${r.documents.length} reviewed documents released to the requester.`,
         );
-        res.json(r);
+        res.json(presentRecord(r));
       }),
     ),
   );
@@ -605,7 +630,7 @@ export function createApp(store, { demo = process.env.DEMO_MODE !== 'false', tes
         r.documents.forEach((d) => (d.attested = false));
         await store.put('request', r);
         await audit(req, r.id, 'Request reopened', note);
-        res.json(r);
+        res.json(presentRecord(r));
       }),
     ),
   );
@@ -621,6 +646,23 @@ export function createApp(store, { demo = process.env.DEMO_MODE !== 'false', tes
             ? r.release.documents
             : r.documents.map((d) => ({ name: d.name, text: renderRedacted(d.text, d.spans) })),
         format = req.params.format;
+      if (format === 'receipt') {
+        if (r.status !== 'released')
+          throw fail(409, 'Approve the release before downloading its receipt.');
+        res.setHeader('Content-Disposition', `attachment; filename="${r.id}-receipt.json"`);
+        return res.json({
+          version: 1,
+          requestId: r.id,
+          releasedAt: r.releasedAt,
+          description:
+            'SHA-256 hashes cover each approved document text, not PDF bytes. This receipt is not a digital signature or a legal certification.',
+          documents: r.release.documents.map((d) => ({
+            id: d.id,
+            name: d.name,
+            sha256: hash(d.text),
+          })),
+        });
+      }
       if (format === 'pdf') {
         res.setHeader('Content-Type', 'application/pdf');
         res.setHeader('Content-Disposition', `attachment; filename="${r.id}-redacted.pdf"`);
@@ -673,6 +715,16 @@ export function createApp(store, { demo = process.env.DEMO_MODE !== 'false', tes
               justification: s.justification,
               reviewNote: s.reviewNote,
               reviewedBy: s.reviewedBy,
+            })),
+            supersededDecisions: (d.supersededSpans || []).map((s) => ({
+              id: s.id,
+              category: s.category,
+              decision: s.decision,
+              reviewNote: s.reviewNote,
+              reviewedBy: s.reviewedBy,
+              replacedBy: s.replacedBy,
+              replacedAt: s.replacedAt,
+              replacementNote: s.replacementNote,
             })),
             integrity: d.integrity,
           })),
@@ -732,7 +784,7 @@ export function createApp(store, { demo = process.env.DEMO_MODE !== 'false', tes
         };
         await store.put('request', r);
         await audit(req, r.id, 'Published comparison attached', d.name);
-        res.json(r);
+        res.json(presentRecord(r));
       }),
     ),
   );

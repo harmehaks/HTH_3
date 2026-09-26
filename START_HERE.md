@@ -41,7 +41,7 @@ Use **Export draft** during review for redacted PDF, text or an officer decision
 ## 3. Try the rest of the product
 
 - Create a request and upload a text-based PDF, TXT, Markdown or CSV, or paste a record.
-- In **Release library**, filter **Public sources** to see sixteen short government-published excerpts with original source links. They are proactive publications, not fabricated completed ATI responses.
+- In **Release library**, filter **ATI releases** for eight completed ATI responses with PDF page provenance. **Public sources** also includes sixteen proactive publications. Open **Published ATI comparison — fisheries assistance** in Requests for a pre-attached real reference. See [EVIDENCE.md](docs/EVIDENCE.md).
 - Choose **Attach reference** in a document workspace to compare the candidate with the actual published text you supply and its source URL.
 - Use **Listen to briefing** for the queue transcript and browser speech; ElevenLabs takes over when configured.
 - Toggle the light/dark theme and try the app at a phone width.
@@ -53,12 +53,12 @@ Use **Export draft** during review for redacted PDF, text or an officer decision
 
 Follow the account-specific instructions in [README.md](README.md). Copy `.env.example` to `.env` only if you do not already have an environment file, then add your values and restart the app.
 
-| Service | Configure | Check afterward |
-| --- | --- | --- |
-| Gemini | API key, classification model, embedding model | Settings, a new analysis, then reindex the library |
-| Auth0 | Regular Web Application, callback/logout URLs, secrets, namespaced role claim and Post Login Action | Sign in as an officer and a separate requester |
-| Tiger Data | PostgreSQL URL, TLS setting, available pgvector extension | Settings storage status; import corpus into the chosen database |
-| ElevenLabs | API key and voice ID | Play the generated queue briefing |
+| Service    | Configure                                                                                           | Check afterward                                                 |
+| ---------- | --------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| Gemini     | API key, classification model, embedding model                                                      | Settings, a new analysis, then reindex the library              |
+| Auth0      | Regular Web Application, callback/logout URLs, secrets, namespaced role claim and Post Login Action | Sign in as an officer and a separate requester                  |
+| Tiger Data | PostgreSQL URL, TLS setting, available pgvector extension                                           | Settings storage status; import corpus into the chosen database |
+| ElevenLabs | API key and voice ID                                                                                | Play the generated queue briefing                               |
 
 With Auth0 enabled, demo switching is disabled. Assign the officer role deliberately. Requester-created requests are owned by their authenticated subject; officer-created requests need the intended requester's subject ID.
 

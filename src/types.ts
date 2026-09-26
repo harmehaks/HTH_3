@@ -58,7 +58,14 @@ export type Doc = {
   engine: string;
   warnings: string[];
   attested: boolean;
-  reference?: { text: string; sourceUrl: string };
+  reference?: {
+    text: string;
+    sourceUrl: string;
+    requestRef?: string;
+    sourcePage?: number;
+    pdfUrl?: string;
+    note?: string;
+  };
 };
 export type RequestSummary = {
   id: string;
@@ -78,8 +85,24 @@ export type RequestSummary = {
   conflicts: number;
   leaks: number;
 };
-export type RequestRecord = RequestSummary & { documents: Doc[] };
+export type Readiness = {
+  ready: boolean;
+  retainedPercent: number;
+  totalCharacters: number;
+  withheldCharacters: number;
+  blockers: string[];
+  checks: { id: string; label: string; passed: boolean; detail: string }[];
+};
+export type RequestRecord = RequestSummary & { documents: Doc[]; readiness?: Readiness };
 export type Corpus = {
+  sourceType?: string;
+  sourcePage?: number;
+  sourceFile?: string;
+  sourceDisposition?: string;
+  publisher?: string;
+  pdfUrl?: string;
+  pdfSha256?: string;
+  verification?: string;
   id: string;
   requestRef: string;
   title: string;

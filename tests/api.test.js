@@ -6,6 +6,7 @@ import { createApp } from '../server/app.js';
 import { seed } from '../server/seed.js';
 import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
 import { resolve } from 'node:path';
+import { createHash } from 'node:crypto';
 for (const name of [
   'GEMINI_API_KEY',
   'AUTH0_ISSUER_BASE_URL',
@@ -161,7 +162,7 @@ test('requester APIs never expose originals, spans, findings, or officer-only da
       cookie = role.headers.get('set-cookie').split(';')[0];
     const list = await f.request('/requests', { cookie });
     assert.equal(list.status, 200);
-    assert.equal(list.data.length, 9);
+    assert.equal(list.data.length, 10);
     assert.ok(list.data.every((r) => !('pending' in r) && !('risk' in r)));
     const inReview = list.data.find((r) => r.status === 'in_review'),
       record = await f.request(`/requests/${inReview.id}`, { cookie });
@@ -182,7 +183,7 @@ test('requester APIs never expose originals, spans, findings, or officer-only da
     other.requesterId = 'somebody-else';
     await f.store.put('request', other);
     assert.equal((await f.request(`/requests/${inReview.id}`, { cookie })).status, 404);
-    assert.equal((await f.request('/requests', { cookie })).data.length, 8);
+    assert.equal((await f.request('/requests', { cookie })).data.length, 9);
   } finally {
     await f.close();
   }
@@ -224,6 +225,10 @@ test('disclosure requires rationale, automatically refreshes integrity and reset
       409,
     );
     await f.request(`/requests/${r.id}/integrity`, { method: 'POST', body: {} });
+    await f.request(`/requests/${r.id}/documents/${d.id}/attestation`, {
+      method: 'PATCH',
+      body: { attested: true },
+    });
     assert.equal(
       (await f.request(`/requests/${r.id}/release`, { method: 'POST', body: {} })).status,
       200,
@@ -325,6 +330,11 @@ test('automatic check failure preserves the edit, exposes the error and blocks r
     assert.equal(retry.status, 200);
     assert.ok(retry.data.documents[0].integrity);
     assert.equal(retry.data.documents[0].integrityError, undefined);
+    assert.equal(retry.data.documents[0].attested, false);
+    await f.request(`/requests/${r.id}/documents/${d.id}/attestation`, {
+      method: 'PATCH',
+      body: { attested: true },
+    });
     assert.equal(
       (await f.request(`/requests/${r.id}/release`, { method: 'POST', body: {} })).status,
       200,
@@ -478,13 +488,13 @@ test('public starter references are source-linked, idempotent and not fictitious
   try {
     let result = await f.request('/corpus/starter', { method: 'POST', body: {} });
     assert.equal(result.status, 200);
-    assert.equal(result.data.count, 16);
+    assert.equal(result.data.count, 24);
     result = await f.request('/corpus/starter', { method: 'POST', body: {} });
     assert.equal(result.data.count, 0);
     const corpus = (await f.request('/corpus')).data;
-    assert.equal(corpus.length, 16);
+    assert.equal(corpus.length, 24);
     assert.ok(
-      corpus.every(
+      corpus.filter((c) => c.sourceType === 'proactive_publication').every(
         (c) =>
           !c.synthetic &&
           c.sourceType === 'proactive_publication' &&
@@ -492,6 +502,10 @@ test('public starter references are source-linked, idempotent and not fictitious
           new URL(c.sourceUrl).hostname === 'international.canada.ca',
       ),
     );
+    const ati = corpus.filter((c) => c.sourceType === 'ati_release');
+    assert.equal(ati.length, 8);
+    assert.equal(new Set(ati.map((c) => c.requestRef)).size, 8);
+    assert.ok(ati.every((c) => !c.synthetic && c.sourcePage > 0 && c.pdfSha256.length === 64 && c.treatment === 'released' && new URL(c.pdfUrl).hostname === 'central.bac-lac.gc.ca'));
     assert.equal((await f.request('/does-not-exist')).status, 404);
   } finally {
     await f.close();
@@ -585,6 +599,119 @@ test('oversized pasted records are rejected instead of silently truncating sensi
     });
     assert.equal(corpus.status, 400);
   } finally {
+    await f.close();
+  }
+});
+
+test('overlap replacement is explicit, keeps history, and never uncovers a partial old span', async () => {
+  const f = await fixture();
+  try {
+    const r = await f.make();
+    const text = 'Employee name: Alex Morgan';
+    const uploaded = (
+      await f.request(`/requests/${r.id}/documents`, { method: 'POST', body: { text } })
+    ).data;
+    const d = uploaded.documents[0],
+      old = d.spans[0];
+    await f.request(`/requests/${r.id}/documents/${d.id}/spans/${old.id}`, {
+      method: 'PATCH',
+      body: { decision: 'dismissed', note: 'Replacing with a broader contextual redaction.' },
+    });
+    const path = `/requests/${r.id}/documents/${d.id}/spans`;
+    const body = {
+      start: 0,
+      end: text.length,
+      category: 'personal',
+      note: 'The whole line contains identifying context.',
+    };
+    assert.equal((await f.request(path, { method: 'POST', body })).status, 400);
+    assert.equal(
+      (
+        await f.request(path, {
+          method: 'POST',
+          body: { ...body, end: text.length - 1, replaceOverlaps: true },
+        })
+      ).status,
+      400,
+    );
+    const changed = await f.request(path, {
+      method: 'POST',
+      body: { ...body, replaceOverlaps: true },
+    });
+    assert.equal(changed.status, 201);
+    assert.equal(changed.data.documents[0].spans.length, 1);
+    assert.equal(changed.data.documents[0].supersededSpans[0].id, old.id);
+    assert.equal(changed.data.readiness.withheldCharacters, text.length);
+    assert.equal(changed.data.readiness.ready, false);
+    await f.request(`/requests/${r.id}/documents/${d.id}/attestation`, {
+      method: 'PATCH',
+      body: { attested: true },
+    });
+    const released = await f.request(`/requests/${r.id}/release`, { method: 'POST', body: {} });
+    assert.equal(released.status, 200);
+    const receipt = await f.request(`/requests/${r.id}/export/receipt`);
+    assert.equal(receipt.status, 200);
+    assert.match(receipt.data.documents[0].sha256, /^[a-f0-9]{64}$/);
+    assert.equal(
+      receipt.data.documents[0].sha256,
+      createHash('sha256').update(released.data.release.documents[0].text).digest('hex'),
+    );
+    const decisions = await f.request(`/requests/${r.id}/export/json`);
+    assert.equal(decisions.data.documents[0].supersededDecisions[0].id, old.id);
+    assert.ok(!JSON.stringify(receipt.data).includes('Alex Morgan'));
+    const stranger = (
+      await f.request('/session/role', { method: 'POST', body: { role: 'requester' } })
+    ).headers
+      .get('set-cookie')
+      .split(';')[0];
+    const stored = await f.store.get(r.id);
+    stored.requesterId = 'different-requester';
+    await f.store.put('request', stored);
+    assert.equal(
+      (await f.request(`/requests/${r.id}/export/receipt`, { cookie: stranger })).status,
+      404,
+    );
+  } finally {
+    await f.close();
+  }
+});
+
+test('failed explicit integrity rerun invalidates older checks and release readiness', async () => {
+  const f = await fixture(),
+    originalFetch = globalThis.fetch;
+  try {
+    const r = await f.make();
+    const uploaded = (
+      await f.request(`/requests/${r.id}/documents`, {
+        method: 'POST',
+        body: { text: 'Aggregate pilot results are public.' },
+      })
+    ).data;
+    const d = uploaded.documents[0];
+    await f.request(`/requests/${r.id}/documents/${d.id}/attestation`, {
+      method: 'PATCH',
+      body: { attested: true },
+    });
+    assert.equal((await f.request(`/requests/${r.id}`)).data.readiness.ready, true);
+    process.env.GEMINI_API_KEY = 'test-key';
+    globalThis.fetch = (url, options) =>
+      String(url).startsWith('https://generativelanguage.googleapis.com/')
+        ? Promise.resolve(new Response('{}', { status: 503 }))
+        : originalFetch(url, options);
+    assert.equal(
+      (await f.request(`/requests/${r.id}/integrity`, { method: 'POST', body: {} })).status,
+      500,
+    );
+    const updated = (await f.request(`/requests/${r.id}`)).data;
+    assert.equal(updated.readiness.ready, false);
+    assert.equal(updated.documents[0].integrity, null);
+    assert.equal(
+      (await f.request(`/requests/${r.id}/release`, { method: 'POST', body: {} })).status,
+      409,
+    );
+  } finally {
+    delete process.env.GEMINI_API_KEY;
+    globalThis.fetch = originalFetch;
     await f.close();
   }
 });

@@ -85,10 +85,24 @@ export async function geminiJSON(prompt, schema) {
       }),
     },
   );
-  if (!response.ok)
-    throw new Error(
+  if (!response.ok) {
+    const error = new Error(
       `Gemini request failed (${response.status}). Check your API key, model and quota.`,
     );
+    error.providerStatus = response.status;
+    if (response.status === 429) {
+      try {
+        const failure = await response.json();
+        error.dailyQuotaExhausted =
+          failure.error?.details?.some((detail) =>
+            detail.violations?.some((violation) => /PerDay/i.test(violation.quotaId || '')),
+          ) || false;
+      } catch {
+        /* Keep the provider error if its diagnostic body is unavailable. */
+      }
+    }
+    throw error;
+  }
   const data = await response.json();
   return JSON.parse(
     data.candidates?.[0]?.content?.parts
@@ -182,26 +196,25 @@ export async function leakTester(redactedText) {
       schema,
     );
     if (!data || !Array.isArray(data.findings)) throw new Error('Invalid leak tester result.');
-    return data.findings
-      .filter(
-        (f) =>
-          typeof f.clue === 'string' &&
-          f.clue &&
-          !f.clue.includes('[REDACTED') &&
-          redactedText.includes(f.clue) &&
-          typeof f.inference === 'string' &&
-          typeof f.guess === 'string' &&
-          ['high', 'medium', 'low'].includes(f.severity),
-      )
-      .map((f) => ({ ...f, id: randomUUID(), resolved: false, note: '' }));
+    const valid = data.findings.every(
+      (f) =>
+        typeof f.clue === 'string' &&
+        f.clue &&
+        f.clue.replace(/\[REDACTED[^\]]*\]/g, '').trim().length > 0 &&
+        redactedText.includes(f.clue) &&
+        typeof f.inference === 'string' &&
+        typeof f.guess === 'string' &&
+        ['high', 'medium', 'low'].includes(f.severity),
+    );
+    if (!valid) throw new Error('Leak tester returned unsupported evidence. Retry before release.');
+    return data.findings.map((f) => ({ ...f, id: randomUUID(), resolved: false, note: '' }));
   }
   const findings = [];
   for (const line of redactedText.split('\n')) {
     if (
       /only (?:employee|officer)|uniquely identifiable|can be identified|born on|home address|contact directory/i.test(
-        line,
-      ) &&
-      !line.includes('[REDACTED')
+        line.replace(/\[REDACTED[^\]]*\]/g, ''),
+      )
     )
       findings.push({
         id: randomUUID(),

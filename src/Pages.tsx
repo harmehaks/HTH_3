@@ -477,7 +477,10 @@ export function LibraryPage({
   }
   const visible = items.filter(
     (c) =>
-      (tab === 'all' || (tab === 'public' && !c.synthetic) || (tab === 'demo' && c.synthetic)) &&
+      (tab === 'all' ||
+        (tab === 'public' && !c.synthetic) ||
+        (tab === 'ati' && c.sourceType === 'ati_release') ||
+        (tab === 'demo' && c.synthetic)) &&
       `${c.text} ${c.title} ${c.requestRef}`.toLowerCase().includes(search.toLowerCase()),
   );
   return (
@@ -510,6 +513,7 @@ export function LibraryPage({
           {[
             ['all', 'All references'],
             ['public', 'Public sources'],
+            ['ati', 'ATI releases'],
             ['demo', 'Demo examples'],
           ].map(([value, label]) => (
             <button
@@ -524,6 +528,7 @@ export function LibraryPage({
                     (c) =>
                       value === 'all' ||
                       (value === 'public' && !c.synthetic) ||
+                      (value === 'ati' && c.sourceType === 'ati_release') ||
                       (value === 'demo' && c.synthetic),
                   ).length
                 }
@@ -532,7 +537,8 @@ export function LibraryPage({
           ))}
         </div>
         <div className="library-tool-buttons">
-          {items.filter((c) => c.id.startsWith('public-')).length < 16 && (
+          {items.filter((c) => c.id.startsWith('public-') || c.id.startsWith('ati-lac-')).length <
+            24 && (
             <button className="button secondary small" disabled={busy} onClick={starter}>
               <BookOpen size={14} />
               Load public starter set
@@ -562,7 +568,13 @@ export function LibraryPage({
                   <BookOpen size={18} />
                 </span>
                 <Badge tone={c.synthetic ? 'neutral' : 'green'}>
-                  {c.synthetic ? 'Synthetic demo' : 'Public source'}
+                  {c.synthetic
+                    ? 'Synthetic demo'
+                    : c.sourceType === 'ati_release'
+                      ? 'ATI release'
+                      : c.sourceType === 'proactive_publication'
+                        ? 'Proactive publication'
+                        : 'Public source'}
                 </Badge>
               </div>
               <small className="corpus-reference">{c.requestRef}</small>
@@ -588,6 +600,18 @@ export function LibraryPage({
           onClose={() => setSelected(null)}
         >
           <blockquote className="library-excerpt">{selected.text}</blockquote>
+          {selected.sourceType === 'ati_release' && (
+            <div className="notice">
+              <strong>
+                {selected.publisher} · PDF page {selected.sourcePage}
+              </strong>
+              <p>
+                {selected.sourceFile} · Package: {selected.sourceDisposition}. This excerpt was
+                disclosed; the package may contain other withheld material.
+              </p>
+              <p>{selected.verification}</p>
+            </div>
+          )}
           <div className="reference-details">
             <span>
               Treatment<strong>{selected.treatment}</strong>

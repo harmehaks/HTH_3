@@ -2,6 +2,29 @@ import { test, expect } from '@playwright/test';
 test.beforeEach(async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
 });
+
+test('real ATI comparison and page provenance are available without attaching a reference', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Requests', exact: true }).click();
+  await page.getByText('Published ATI comparison — fisheries assistance', { exact: true }).click();
+  await page.getByRole('button', { name: 'View comparison' }).click();
+  await expect(page.locator('.published-comparison')).toContainText('A-2026-00675');
+  await expect(page.locator('.published-comparison')).toContainText('PDF page 3');
+  await expect(page.locator('.published-comparison')).toContainText('C.E.S.O. volunteer.');
+  await expect(page.getByText(/Already published excerpt used as review input/)).toBeVisible();
+  await page.screenshot({ path: 'artifacts/ati-comparison.png', fullPage: true });
+  await page.getByRole('button', { name: 'Release library', exact: true }).click();
+  await page.getByRole('button', { name: /ATI releases/ }).click();
+  await expect(page.locator('.corpus-card')).toHaveCount(8);
+  await page.locator('.corpus-card').first().click();
+  await expect(page.getByRole('dialog')).toContainText('Library and Archives Canada');
+  await expect(page.getByRole('link', { name: 'View public source' })).toHaveAttribute(
+    'href',
+    /bac-lac.gc.ca/,
+  );
+});
 test('dashboard, all navigation, search, theme and responsive layout work', async ({ page }) => {
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
@@ -175,11 +198,11 @@ test('public starter library, briefing transcript and presentation deck are avai
   await page.goto('/');
   await page.getByRole('button', { name: 'Release library', exact: true }).click();
   await page.getByRole('button', { name: /Public sources/ }).click();
-  await expect(page.locator('.corpus-card')).toHaveCount(16);
+  await expect(page.locator('.corpus-card')).toHaveCount(24);
   await page.locator('.corpus-card').first().click();
   await expect(page.getByRole('link', { name: 'View public source' })).toHaveAttribute(
     'href',
-    /international.canada.ca/,
+    /international.canada.ca|bac-lac.gc.ca/,
   );
   await page.getByRole('button', { name: 'Close dialog' }).click();
   await page.getByRole('button', { name: 'Overview', exact: true }).click();
@@ -199,4 +222,31 @@ test('public starter library, briefing transcript and presentation deck are avai
   expect(
     await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
   ).toBeTruthy();
+});
+
+test('disclosure lens switches examples and server readiness guides a replacement', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Context protected', exact: true }).click();
+  await expect(page.locator('.preview-insight')).toContainText('identifying clue goes');
+  await page.getByRole('button', { name: 'Name hidden', exact: true }).click();
+  await expect(page.locator('.preview-insight')).toContainText('visible identity');
+  await page.getByRole('button', { name: 'Continue your review' }).click();
+  await expect(page.getByRole('region', { name: 'Release readiness' })).toBeVisible();
+  await page.getByRole('button', { name: 'Manual redaction', exact: true }).click();
+  await page
+    .getByRole('textbox', { name: 'Exact text to withhold' })
+    .fill('Employee name: Alex Morgan');
+  await page
+    .getByRole('textbox', { name: 'Justification', exact: true })
+    .fill('Cover identifying label and personal name together.');
+  await expect(page.getByRole('button', { name: 'Add redaction' })).toBeDisabled();
+  await page
+    .getByRole('checkbox', { name: 'Replace these suggestions and preserve their history' })
+    .check();
+  await page.getByRole('button', { name: 'Add redaction' }).click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Redacted', exact: true }).click();
+  await expect(page.locator('.document-text')).not.toContainText('Employee name:');
 });

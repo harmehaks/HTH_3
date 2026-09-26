@@ -396,6 +396,7 @@ export function ManualDialog({
     [cat, setCat] = useState('personal'),
     [note, setNote] = useState(''),
     [occurrence, setOccurrence] = useState(0),
+    [replaceOverlaps, setReplaceOverlaps] = useState(false),
     [busy, setBusy] = useState(false);
   const matches: number[] = [];
   if (quote) {
@@ -406,13 +407,17 @@ export function ManualDialog({
     }
   }
   const start = matches[occurrence];
+  const overlaps = doc.spans.filter(
+    (s) => start !== undefined && start < s.end && start + quote.length > s.start,
+  );
+  const fullyCovers = overlaps.every((s) => start <= s.start && start + quote.length >= s.end);
   async function submit(e: FormEvent) {
     e.preventDefault();
     setBusy(true);
     try {
       const r = await api<RequestRecord>(
         `/requests/${id}/documents/${doc.id}/spans`,
-        send({ start, end: start + quote.length, category: cat, note }),
+        send({ start, end: start + quote.length, category: cat, note, replaceOverlaps }),
       );
       onSaved(r);
       const checkError = r.documents.find((d) => d.id === doc.id)?.integrityError;
@@ -442,6 +447,7 @@ export function ManualDialog({
             onChange={(e) => {
               setQuote(e.target.value);
               setOccurrence(0);
+              setReplaceOverlaps(false);
             }}
             required
             rows={3}
@@ -451,7 +457,13 @@ export function ManualDialog({
         {matches.length > 1 && (
           <label>
             Occurrence
-            <select value={occurrence} onChange={(e) => setOccurrence(Number(e.target.value))}>
+            <select
+              value={occurrence}
+              onChange={(e) => {
+                setOccurrence(Number(e.target.value));
+                setReplaceOverlaps(false);
+              }}
+            >
               {matches.map((s, i) => (
                 <option value={i} key={s}>
                   Occurrence {i + 1} — character {s + 1}
@@ -465,6 +477,30 @@ export function ManualDialog({
             ? `${matches.length} exact ${matches.length === 1 ? 'match' : 'matches'} in the document`
             : 'No exact match. Copy the text as it appears in the record.'}
         </div>
+        {overlaps.length > 0 && (
+          <div className="overlap-notice" role="status">
+            <strong>
+              {overlaps.length} existing{' '}
+              {overlaps.length === 1 ? 'suggestion overlaps' : 'suggestions overlap'} this
+              selection.
+            </strong>
+            {fullyCovers ? (
+              <label className="replacement-check">
+                <input
+                  type="checkbox"
+                  checked={replaceOverlaps}
+                  onChange={(e) => setReplaceOverlaps(e.target.checked)}
+                />{' '}
+                Replace these suggestions and preserve their history
+              </label>
+            ) : (
+              <p>
+                Expand your selection to fully cover the overlapping suggestions. This prevents
+                accidentally exposing part of a withheld passage.
+              </p>
+            )}
+          </div>
+        )}
         <label>
           Legal category
           <select value={cat} onChange={(e) => setCat(e.target.value)}>
@@ -489,7 +525,15 @@ export function ManualDialog({
           <button className="button secondary" type="button" onClick={onClose}>
             Cancel
           </button>
-          <button className="button primary" disabled={busy || start === undefined || !note.trim()}>
+          <button
+            className="button primary"
+            disabled={
+              busy ||
+              start === undefined ||
+              !note.trim() ||
+              (overlaps.length > 0 && (!fullyCovers || !replaceOverlaps))
+            }
+          >
             {busy ? <LoaderCircle className="spin" size={16} /> : <ShieldCheck size={16} />}Add
             redaction
           </button>

@@ -9,12 +9,89 @@ import {
   localEmbedding,
   consistencyCheck,
   classify,
+  geminiJSON,
 } from '../server/engine.js';
 import { auditHash, verifyAudit } from '../server/audit.js';
 import { createStore } from '../server/store.js';
 delete process.env.GEMINI_API_KEY;
+test('Gemini daily quota failures are distinguishable without exposing provider payloads', async () => {
+  const originalFetch = global.fetch;
+  global.fetch = async () =>
+    new Response(
+      JSON.stringify({
+        error: {
+          details: [
+            { violations: [{ quotaId: 'GenerateRequestsPerDayPerProjectPerModel-FreeTier' }] },
+          ],
+          message: 'sensitive provider payload',
+        },
+      }),
+      { status: 429 },
+    );
+  try {
+    await assert.rejects(geminiJSON('public fixture', {}), (error) => {
+      assert.equal(error.providerStatus, 429);
+      assert.equal(error.dailyQuotaExhausted, true);
+      assert.doesNotMatch(error.message, /sensitive provider payload/);
+      return true;
+    });
+  } finally {
+    global.fetch = originalFetch;
+  }
+});
 const sample =
   'Public pilot progress.\nEmployee name: Alex Morgan\nEmail: alex.morgan@example.net\nWe recommend expanding the internal pilot.\nThe only officer leading the pilot can be identified in the contact directory.';
+
+test('mixed lines retain contextual warnings after another part is redacted', async () => {
+  const text =
+    'The only officer leading the pilot can be identified in the contact directory; email alex@example.net.';
+  const output = renderRedacted(text, localClassify(text));
+  assert.ok(output.includes('[REDACTED'));
+  const findings = await leakTester(output);
+  assert.equal(findings.length, 1);
+  assert.ok(findings[0].clue.includes('only officer'));
+  assert.equal((await leakTester('[REDACTED · s. 19(1)]')).length, 0);
+});
+
+test('Gemini accepts real mixed evidence and rejects fabricated findings instead of reporting a clean pass', async () => {
+  const originalFetch = globalThis.fetch;
+  process.env.GEMINI_API_KEY = 'contract-test-key';
+  const output = 'The only officer is [REDACTED · s. 19(1)] and won the public award.';
+  let clue = output;
+  try {
+    globalThis.fetch = async () =>
+      new Response(
+        JSON.stringify({
+          candidates: [
+            {
+              content: {
+                parts: [
+                  {
+                    text: JSON.stringify({
+                      findings: [
+                        {
+                          clue,
+                          inference: 'The award may identify the officer.',
+                          guess: '',
+                          severity: 'high',
+                        },
+                      ],
+                    }),
+                  },
+                ],
+              },
+            },
+          ],
+        }),
+      );
+    assert.equal((await leakTester(output)).length, 1);
+    clue = 'fabricated evidence';
+    await assert.rejects(() => leakTester(output), /unsupported evidence/);
+  } finally {
+    globalThis.fetch = originalFetch;
+    delete process.env.GEMINI_API_KEY;
+  }
+});
 
 test('classification returns valid, non-overlapping spans across relevant categories', () => {
   const spans = localClassify(sample);

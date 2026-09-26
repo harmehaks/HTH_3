@@ -22,6 +22,7 @@ import {
   Info,
 } from 'lucide-react';
 import { api, send } from './api';
+import ReleaseReadiness from './ReleaseReadiness';
 import { Badge, IconButton, Loading, Empty, Status, Risk, Modal, date } from './components';
 import { FindingDialog, ManualDialog } from './Dialogs';
 import type { Category, RequestRecord, Doc, Span, Finding } from './types';
@@ -93,7 +94,12 @@ export default function Workspace({ id, categories, onBack, notify, onChanged, o
       notify(checkError ? `Changes saved. ${checkError}` : message, Boolean(checkError));
       return true;
     } catch (e) {
-      setRecord(record);
+      // An error can follow a saved edit or invalidated checks. Read authoritative state.
+      try {
+        setRecord(await api<RequestRecord>(`/requests/${id}`));
+      } catch {
+        setRecord(record);
+      }
       notify((e as Error).message, true);
       return false;
     } finally {
@@ -128,15 +134,7 @@ export default function Workspace({ id, categories, onBack, notify, onChanged, o
     const index = doc.spans.findIndex((s) => s.id === span?.id);
     setSelected(doc.spans[(index + offset + doc.spans.length) % doc.spans.length]?.id || '');
   };
-  const ready =
-    record.documents.length > 0 &&
-    record.documents.every(
-      (d) =>
-        d.attested &&
-        d.spans.every((s) => s.decision !== 'pending') &&
-        d.integrity &&
-        [...d.integrity.leaks, ...d.integrity.conflicts].every((f) => f.resolved),
-    );
+  const ready = record.readiness?.ready === true;
   return (
     <>
       <div className="workspace-breadcrumb">
@@ -175,6 +173,7 @@ export default function Workspace({ id, categories, onBack, notify, onChanged, o
           )}
         </div>
       </div>
+      <ReleaseReadiness record={record} />
       <div className="review-progress">
         <div className="progress-step complete">
           <span>1</span>
@@ -361,6 +360,7 @@ export default function Workspace({ id, categories, onBack, notify, onChanged, o
                   )
                 )}
               </div>
+              {doc.reference?.note && <div className="notice">{doc.reference.note}</div>}
               {view === 'published' && doc.reference && (
                 <div className="published-comparison">
                   <div>
@@ -382,7 +382,11 @@ export default function Workspace({ id, categories, onBack, notify, onChanged, o
                     <article className="document-paper">
                       <div className="paper-header">
                         <span>PUBLIC REFERENCE</span>
-                        <span>OFFICER PROVIDED</span>
+                        <span>
+                          {doc.reference.requestRef
+                            ? `${doc.reference.requestRef} · PDF page ${doc.reference.sourcePage}`
+                            : 'OFFICER PROVIDED'}
+                        </span>
                       </div>
                       <div className="document-text">{doc.reference.text}</div>
                     </article>

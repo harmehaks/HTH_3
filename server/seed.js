@@ -1,6 +1,6 @@
 import { randomUUID, createHash } from 'node:crypto';
 import { auditHash } from './audit.js';
-import { importPublicCorpus } from './public-corpus.js';
+import { importPublicCorpus, atiCorpus } from './public-corpus.js';
 import { localClassify, integrity, localEmbedding, renderRedacted } from './engine.js';
 export const demoDocument = `CANADA BORDER SERVICES AGENCY
 Access to Information · Internal briefing note
@@ -50,7 +50,10 @@ Synthetic demonstration document. All people, figures, and request references ar
 
 export async function seed(store) {
   await importPublicCorpus(store);
-  if ((await store.all('request')).length) return;
+  if ((await store.all('request')).length) {
+    await seedPublishedComparison(store);
+    return;
+  }
   const excerpts = [
     'We recommend extending the pilot to three additional regional offices before a national rollout, subject to a readiness assessment and ministerial approval.',
     'The pilot achieved an average processing-time reduction of 18%.',
@@ -189,4 +192,50 @@ export async function seed(store) {
   };
   event.hash = auditHash(event);
   await store.put('audit', event);
+  await seedPublishedComparison(store);
+}
+
+async function seedPublishedComparison(store) {
+  const id = 'DEMO-ATI-00675';
+  if (await store.get(id)) return;
+  const source = atiCorpus.find((c) => c.requestRef === 'A-2026-00675');
+  const now = new Date().toISOString();
+  const spans = localClassify(source.text);
+  const check = await integrity(source.text, spans, await store.all('corpus'), store);
+  await store.put('request', {
+    id,
+    title: 'Published ATI comparison — fisheries assistance',
+    department: 'Library and Archives Canada',
+    description:
+      'Re-review exercise using an already published historical excerpt. Compare a local rule suggestion with the actual release. No unreleased original is available.',
+    requesterId: 'demo-requester',
+    createdAt: now,
+    dueAt: new Date(Date.now() + 30 * 86400000).toISOString(),
+    status: 'in_review',
+    synthetic: true,
+    priority: 'normal',
+    releasedAt: null,
+    documents: [
+      {
+        id: randomUUID(),
+        name: 'published-ati-excerpt.txt',
+        text: source.text,
+        pages: 1,
+        spans,
+        integrity: check,
+        engine: 'Local pattern rules',
+        attested: false,
+        createdAt: now,
+        warnings: ['Re-review of already published text, not a recovered unredacted original.'],
+        reference: {
+          text: source.text,
+          sourceUrl: source.sourceUrl,
+          requestRef: source.requestRef,
+          sourcePage: source.sourcePage,
+          pdfUrl: source.pdfUrl,
+          note: 'Already published excerpt used as review input. The candidate shows a local rule suggestion; the reference shows the actual released text.',
+        },
+      },
+    ],
+  });
 }

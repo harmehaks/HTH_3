@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { api } from './api';
+import DisclosurePreview from './DisclosurePreview';
 import { ArrowLink, Badge, RequestTable, SectionHeading, daysLeft } from './components';
 import type { Audit, RequestSummary, Page } from './types';
 type Props = {
@@ -68,7 +69,7 @@ export default function Dashboard({ requests, onOpen, onNew, onPage, onBriefing,
     <>
       <div className="page-heading">
         <div>
-          <div className="eyebrow">YOUR WORKSPACE, AT A GLANCE</div>
+          <div className="eyebrow">THE DISCLOSURE WORKSPACE</div>
           <h1>
             A clearer path to disclosure<span className="heading-dot">.</span>
           </h1>
@@ -103,44 +104,7 @@ export default function Dashboard({ requests, onOpen, onNew, onPage, onBriefing,
             <ShieldCheck size={13} /> Built for thoughtful access to information
           </span>
         </div>
-        <div className="hero-art" aria-hidden="true">
-          <div className="art-orbit orbit-one" />
-          <div className="art-orbit orbit-two" />
-          <div className="art-grid" />
-          <div className="art-paper back-paper">
-            <div className="paper-mini-label">DISCLOSURE RECORD</div>
-            <div className="art-line" />
-            <div className="art-line short" />
-          </div>
-          <div className="art-paper front-paper">
-            <div className="art-paper-top">
-              <span className="art-logo">R</span>
-              <span>REVIEWED WITH CARE</span>
-              <span className="art-dot" />
-            </div>
-            <div className="art-title-line" />
-            <div className="art-line" />
-            <div className="art-line" />
-            <div className="art-redaction purple" />
-            <div className="art-line short" />
-            <div className="art-redaction gold" />
-            <div className="art-line" />
-            <div className="art-line short" />
-            <div className="art-bottom">
-              <ShieldCheck size={18} />
-              <span>Ready for a human decision</span>
-            </div>
-          </div>
-          <div className="floating-check">
-            <ShieldCheck size={20} />
-            <div>
-              <strong>Integrity, built in</strong>
-              <span>Every decision has a reason.</span>
-            </div>
-          </div>
-          <div className="art-spark spark-one">✧</div>
-          <div className="art-spark spark-two">+</div>
-        </div>
+        <DisclosurePreview onReview={() => (priority ? onOpen(priority.id) : onNew())} />
       </div>
       <div className="stats-grid">
         <Stat

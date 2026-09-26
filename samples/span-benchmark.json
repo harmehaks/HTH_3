@@ -1,0 +1,32 @@
+[
+  {
+    "id": "labelled-name-email",
+    "text": "Public result: 18%.\nEmployee name: Alex Morgan\nEmail: alex@example.net",
+    "sensitive": ["Alex Morgan", "alex@example.net"]
+  },
+  {
+    "id": "email-and-unlabelled-name",
+    "text": "Alex Morgan coordinated the trial. Personal contact: alex@example.net",
+    "sensitive": ["Alex Morgan", "alex@example.net"]
+  },
+  {
+    "id": "unlabelled-home-address",
+    "text": "Alex Morgan lives at 42 Example Street, Ottawa.",
+    "sensitive": ["Alex Morgan", "42 Example Street, Ottawa"]
+  },
+  {
+    "id": "unlabelled-date-of-birth",
+    "text": "Their date of birth is 12 March 1984.",
+    "sensitive": ["12 March 1984"]
+  },
+  {
+    "id": "private-telephone",
+    "text": "Private telephone: 613-555-0184\nThe aggregate result is public.",
+    "sensitive": ["613-555-0184"]
+  },
+  {
+    "id": "public-facts",
+    "text": "The pilot reduced processing time by 18%. The public budget is $2.4 million.",
+    "sensitive": []
+  }
+]
