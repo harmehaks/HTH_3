@@ -1,0 +1,268 @@
+# Redactor
+
+A complete working prototype for AI-assisted Access to Information review. Redactor combines an officer dashboard, a document review workspace, an independent contextual leak tester, cross-request consistency checks, a requester portal, and spoken briefings.
+
+The application runs locally without accounts or API keys. Optional live integrations are implemented for **Gemini, Auth0, Tiger Data/PostgreSQL with pgvector, and ElevenLabs**. Live integrations require your credentials and must be verified against your own accounts. This prototype is not a government submission portal or an approved system for operational government records.
+
+## 1. Run it now
+
+Requires **Node.js 22.13 or newer** and npm. This workspace was tested with Node 22.20.
+
+From PowerShell:
+
+```powershell
+Set-Location 'C:\Users\harme\OneDrive\Desktop\hth3'
+npm install
+npm run dev
+```
+
+Open **http://127.0.0.1:5173**. The API runs at http://127.0.0.1:3001.
+
+No `.env` file is required for the local demo. It starts with nine synthetic access requests, sixteen synthetic release excerpts, and sixteen short excerpts from verified government-published briefing books. Requests and decisions persist in `data/redactor.sqlite`. Fonts and illustrations are served locally; the UI does not require a third-party font service.
+
+If a server is already running in this workspace, open the URL directly. Press **Ctrl+C** in its terminal to stop it. Do not run a second copy on the same ports.
+
+## 2. What is implemented
+
+| Brief requirement           | Implementation                                                                                                                        |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| Document ingestion          | Text-based PDF, TXT, Markdown, CSV, or pasted text; 15 MB, 100 pages, and 120,000 characters per document                             |
+| Six legal categories        | Personal information, advice/recommendations, international affairs, law enforcement, solicitor-client privilege, Cabinet confidences |
+| AI classification           | Gemini structured output with exact-quote matching, confidence validation, category validation and overlap rejection                  |
+| Offline first pass          | Clearly labelled local pattern rules; never presented as live AI                                                                      |
+| Legal grounding             | Section-specific explanations and links to the Justice Laws website; Cabinet confidences labelled as an exclusion                     |
+| Human review                | Every suggestion requires approval or disclosure; disclosure and category changes require a rationale                                 |
+| Low confidence              | Suggestions below 85% receive an extra warning; all confidence levels still require review                                            |
+| Independent leak testing    | Separate analysis pass takes only the candidate redacted text, without original spans or hidden values                                |
+| Reconstruction scoring      | Exact/partial/unverified/untested guesses scored outside the tester against withheld values                                           |
+| Mosaic effect               | Contextual identification findings with visible clues, severity, officer rationale and fresh checks after changes                     |
+| Consistency                 | 768-dimensional similarity search; pgvector with PostgreSQL, normalized word vectors locally, Gemini embeddings when configured       |
+| Prior release references    | Specific source/reference IDs, excerpts, similarity values, treatment, and contextual officer assessment                              |
+| Real public starter corpus  | Sixteen source-linked proactive publications; references use `PD-GAC-…`, not invented ATI request numbers                             |
+| Original/release comparison | Original vs candidate; candidate vs an officer-attached actual published release with its source URL                                  |
+| Officer dashboard           | Stored-request counts, pending suggestions, release totals, overdue targets, throughput, risk and open findings                       |
+| Requester portal            | Create a request, follow progress, and download only the requester’s own approved redacted records                                    |
+| Authentication              | Auth0 OIDC and namespaced roles; demo role switching unavailable with Auth0 enabled                                                   |
+| Voice                       | ElevenLabs on demand; browser speech and a readable transcript without credentials                                                    |
+| Export                      | Fresh redacted PDF, text, officer decision JSON, and activity JSON; original PDF bytes are never included in exports                  |
+| Release controls            | Block on pending decisions, open findings, stale checks, absent full-document attestation, or no documents                            |
+| Audit                       | Sequenced SHA-256 hash-linked activity with canonical JSON hashing and verification                                                   |
+| Presentation                | Responsive layouts, dark theme, local fonts, custom illustrations, keyboard shortcuts, focus-managed dialogs                          |
+| Team/demo delivery          | Three-person ownership plan, API contract, demo script, presentation deck and deployment files                                        |
+
+## 3. Try the full workflow
+
+1. On Overview, select **Continue your review** to open the border-services demo.
+2. Click a coloured suggestion. Read its section, explanation, confidence, and statutory conditions.
+3. **Approve withholding**, or select **Disclose / change** and record your reasoning.
+4. Try **Original**, **Redacted**, and **Compare**. The redacted view replaces hidden text instead of merely covering it.
+5. On the **Integrity** tab, examine the identifying context and the similar prior release.
+6. To mitigate the contextual leak, add a manual redaction for the full sentence beginning “The only officer leading the Northern Region pilot…”. Choose a category and record a justification. This invalidates old checks.
+7. **Run integrity checks**. Resolve any remaining findings with an explicit rationale. Contextual differences can justify different treatment; a similarity match is not a legal ruling.
+8. Confirm **I have reviewed the entire record** only after reviewing unmarked content and statutory conditions.
+9. **Approve release**, then confirm **Approve & release**.
+10. Open the profile menu and choose **Requester portal**. Open the approved release and download the redacted PDF/text.
+11. Switch back to the officer workspace. Activity log records the review, testing, attestation, and approval.
+
+For a simpler release demonstration, create a new request and paste:
+
+```text
+PILOT RESULTS
+
+The pilot reduced processing time by 18%.
+Employee name: Private Person
+Personal contact: private.person@example.net
+```
+
+Approve both suggested personal-information spans, attest review, and release. The aggregate result remains accessible; the synthetic private identity and email do not appear in the requester’s text or PDF.
+
+**Shortcuts:** `N` creates a request, `/` or `Ctrl+K` focuses search, and `Esc` closes a dialog. Search filters the current library/activity/integrity page or searches requests from Overview and the document workspace.
+
+## 4. Connect Gemini
+
+Create your own API key, then create a local environment file:
+
+```powershell
+Copy-Item -LiteralPath .env.example -Destination .env
+```
+
+Set:
+
+```dotenv
+GEMINI_API_KEY=your-key
+GEMINI_MODEL=gemini-2.5-flash
+GEMINI_EMBEDDING_MODEL=gemini-embedding-001
+```
+
+Restart the app. Settings shows **Gemini** instead of local pattern rules. Upload a new document to obtain new live suggestions. In Release library, use **Reindex library** to move existing excerpts to the current embedding provider. Embeddings from different models are not compared.
+
+Classification uses structured JSON and matches returned exact quotes to the source text. A quote that cannot be matched causes an error; invented spans are not saved. The leak tester is a separate Gemini call with only the proposed release. API keys never enter client-side code.
+
+The configured document and reference text is sent to Google. Select an appropriate deployment and data-processing arrangement before using real sensitive records. API failures remain visible; the app does not silently call a failed live result “local AI”.
+
+Official references: [Structured outputs](https://ai.google.dev/gemini-api/docs/structured-output), [Embeddings](https://ai.google.dev/gemini-api/docs/embeddings).
+
+## 5. Connect Auth0
+
+1. Create an Auth0 **Regular Web Application**.
+2. For development set Allowed Callback URLs to `http://localhost:5173/callback` and Allowed Logout URLs to `http://localhost:5173`.
+3. Set these values in `.env` and open the app at **http://localhost:5173** so the origin matches your registered base URL:
+
+```dotenv
+DEMO_MODE=false
+SESSION_SECRET=your-own-long-random-session-secret
+AUTH0_ISSUER_BASE_URL=https://your-tenant.auth0.com
+AUTH0_CLIENT_ID=your-client-id
+AUTH0_CLIENT_SECRET=your-client-secret
+AUTH0_BASE_URL=http://localhost:5173
+AUTH0_ROLES_CLAIM=https://redactor.app/roles
+```
+
+Generate a secret with:
+
+```powershell
+node -e "console.log(require('node:crypto').randomBytes(48).toString('hex'))"
+```
+
+4. Create a role named **officer** and assign it only to intended ATIP users. Other authenticated users receive requester access.
+5. Create and deploy a **Post Login Action**, then add it to your Login flow:
+
+```javascript
+exports.onExecutePostLogin = async (event, api) => {
+  api.idToken.setCustomClaim('https://redactor.app/roles', event.authorization?.roles || []);
+};
+```
+
+6. Restart and sign in. The local demo switch is disabled when Auth0 is configured. Partial Auth0 configuration fails with a clear error.
+7. For officer-created requests, supply the intended requester’s Auth0 subject ID (`auth0|…`). Requests created by a requester automatically belong to that authenticated subject.
+
+To avoid retaining synthetic demo records in an authenticated workspace, use a separate data file:
+
+```dotenv
+DATA_PATH=data/authenticated.sqlite
+```
+
+For public hosting, use your HTTPS URL in Auth0 and `AUTH0_BASE_URL`. This is one shared officer workspace, not a multi-department tenant isolation system.
+
+Official reference: [Auth0 Express OIDC setup](https://auth0.com/docs/quickstart/webapp/express/index).
+
+## 6. Connect Tiger Data / PostgreSQL
+
+Create a database with the `vector` extension available and set:
+
+```dotenv
+DATABASE_URL=postgresql://user:password@host:5432/database
+DATABASE_SSL=true
+```
+
+The app creates `records` (JSONB requests, corpus and audit) and `corpus_vectors` (`vector(768)` plus an HNSW cosine index). PostgreSQL connections require valid TLS certificates when SSL is enabled. Set `DATABASE_SSL=false` only for a trusted local database.
+
+Restart and check Settings. Switching database providers starts in the selected database; SQLite records are **not automatically migrated**. In an authenticated empty workspace, use Release library → **Load public starter set**, or import your own released excerpts.
+
+The prototype stores complete request records as JSON, including review time stamps and risk measurements. It does not create a TimescaleDB hypertable or claim a dedicated time-series schema. PostgreSQL provides persistent storage and genuine pgvector queries.
+
+## 7. Connect ElevenLabs
+
+```dotenv
+ELEVENLABS_API_KEY=your-key
+ELEVENLABS_VOICE_ID=your-voice-id
+```
+
+Restart. Overview → **Listen to briefing** uses ElevenLabs audio. Without credentials it uses browser speech when supported and always displays the briefing text. Only a summary of queue counts is sent to the voice service, not original records or withheld spans.
+
+Official reference: [Create speech endpoint](https://elevenlabs.io/docs/api-reference/text-to-speech/convert).
+
+## 8. Add real release data and a comparison
+
+The default public set uses short, source-checked excerpts from sixteen [Global Affairs Canada briefing books](https://international.canada.ca/en/global-affairs/corporate/transparency/briefing-documents/briefing-books). They are **proactive publications**, not sixteen completed ATI request responses. The synthetic reference set is separate. Older published figures are historical context, not current factual assertions.
+
+To add completed ATI records:
+
+1. Find a record on [Open Government’s completed ATI request search](https://search.open.canada.ca/ati/), obtain its publicly released response, and check its treatment.
+2. In Release library, choose **Add public reference**.
+3. Enter the real request ID, title, public source URL, exact released excerpt, and recorded treatment.
+4. The app embeds the supplied excerpt; it does not automatically fetch or validate the URL’s contents.
+5. Import an unreleased source record for officer review only if you are authorized to process it.
+6. In its document workspace choose **Attach reference**, paste the actual published version, and provide its source URL.
+7. **View comparison** presents the candidate release beside the published version. This is text comparison; it does not align original PDF page geometry.
+
+## 9. Validate the app
+
+```powershell
+npm test
+npm run evaluate
+npm run build
+npm run test:e2e
+```
+
+The API tests run with isolated in-memory stores. The browser suite starts a separate seeded in-memory workspace on ports **5174/3002** and never modifies the persistent demo. On Windows it can use an installed Edge browser. If no browser is installed, run:
+
+```powershell
+npx playwright install chromium
+```
+
+Optionally set `PLAYWRIGHT_CHROMIUM_EXECUTABLE` to a Chromium-compatible browser executable.
+
+Tests cover classification validation, output sanitization, independent-tester input, reconstruction scoring, similarity conflicts, ownership/role restrictions, PDF content extraction, release blockers, stale checks, rationale requirements, manual redactions, file uploads, origin checks, hash-chain verification, navigation, mobile layout, themes, and requester release viewing.
+
+`npm run evaluate` produces `artifacts/evaluation.json`. It is a **category-level smoke evaluation** with sixteen synthetic fixtures and sixteen public excerpts. It is not measured performance on an independently adjudicated legal test set, and its numbers must not be used to claim real-world accuracy.
+
+Browser screenshots are written to `artifacts/` for the desktop dashboard, mobile dashboard, dark theme, review workspace, and requester release.
+
+## 10. Build and host
+
+For a production build served by Express:
+
+```powershell
+npm run build
+npm start
+```
+
+Open **http://127.0.0.1:3001**. If Auth0 is enabled, update its callback/logout URLs and `AUTH0_BASE_URL` to that origin or to your deployed HTTPS origin.
+
+With that server running, use `npm run verify:production` in a second terminal to check the compiled dashboard, local font loading under security headers, presentation navigation, and API error handling. The report and screenshots are saved in `artifacts/`.
+
+Container deployment files are supplied. Docker is not required for the local app. For a local PostgreSQL demonstration:
+
+```powershell
+Copy-Item -LiteralPath .env.example -Destination .env
+docker compose up --build
+```
+
+The Compose file uses local development database credentials and binds the application to localhost. Do not use those credentials for an internet-facing deployment. The Docker image runs as the unprivileged Node user and includes a health check.
+
+For Vultr or another host, deploy the image, connect your managed PostgreSQL/Tiger Data URL, supply environment secrets, put a TLS reverse proxy in front, and configure Auth0 for the final origin. `HOST=0.0.0.0` enables container networking. No host, service account, domain registration, purchase or public deployment has been performed by this project.
+
+## 11. Limits to understand
+
+- The implemented taxonomy covers the six categories in the brief, not every exemption/exclusion in the Act.
+- Local rules are deliberately limited and cannot identify arbitrary semantic sensitivity. Gemini suggestions can also be wrong or incomplete.
+- Source PDFs are converted to text. Scans, images, diagrams, layout-dependent meaning, attachments, metadata, and handwriting require separate review/OCR. Exports are freshly generated text-based PDFs, not preserved-layout PDF redaction.
+- Confidence is a suggestion confidence, not a calibrated probability or legal ruling. Risk scores are heuristic indicators, not validated breach probabilities.
+- The release gate confirms recorded review actions; it cannot prove that an officer’s assessment was correct.
+- The audit chain detects internal modifications to stored events; deletion of the whole chain or its tail requires external checkpoints to detect. No external notarization is provided.
+- The prototype is intended for a single server instance. Locks and the audit writer are in-process; multi-instance transactions, tenant isolation, retention policies, managed key encryption, formal accessibility auditing and operational government approval require further engineering.
+- Auth0, Gemini, ElevenLabs, Tiger Data, Docker hosting and external deployment need your accounts. Credential-backed live calls cannot be verified without those credentials. Mocked/provider-contract tests and local tests are supplied.
+
+## 12. Project map and handoff
+
+```text
+src/                       React UI, dialogs, dashboard, reviewer and portal
+server/app.js              API, access controls, release workflow and exports
+server/engine.js            Classification, leak test, scoring and consistency
+server/legal.js             Six categories and statutory links
+server/store.js              SQLite / PostgreSQL and vector search
+server/public-corpus.js      Sixteen verified public starter excerpts
+server/audit.js              Canonical hashing and activity verification
+server/seed.js               Synthetic requests and references
+samples/labeled.json         Synthetic category smoke fixtures
+tests/                      API/engine tests and isolated browser tests
+scripts/                    Evaluation and isolated test server
+docs/TEAM_PLAN.md            Three-person parallel ownership and checkpoints
+docs/API.md                  Shared request/response contract
+docs/DEMO.md                 Rehearsal and fallback walkthrough
+public/pitch.html            Self-contained eight-slide presentation
+Dockerfile, compose.yaml     Deployment scaffolding
+```
+
+The legal citations were checked against the [Access to Information Act](https://laws-lois.justice.gc.ca/eng/acts/A-1/) and the [Treasury Board Access to Information Manual](https://www.canada.ca/en/treasury-board-secretariat/services/access-information-privacy/access-information/access-information-manual.html). Section 69 is an exclusion, and the review UI explicitly asks officers to consider exceptions and conditions rather than mechanically apply a category.
