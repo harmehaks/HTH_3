@@ -4,6 +4,8 @@ A complete working prototype for AI-assisted Access to Information review. Redac
 
 The application runs locally without accounts or API keys. Optional live integrations are implemented for **Gemini, Auth0, Tiger Data/PostgreSQL with pgvector, and ElevenLabs**. Live integrations require your credentials and must be verified against your own accounts. This prototype is not a government submission portal or an approved system for operational government records.
 
+Start with [START_HERE.md](START_HERE.md) for the guided walkthrough and remaining account setup. Tested results are in [docs/VERIFICATION.md](docs/VERIFICATION.md).
+
 ## 1. Run it now
 
 Requires **Node.js 22.13 or newer** and npm. This workspace was tested with Node 22.20.
@@ -24,31 +26,31 @@ If a server is already running in this workspace, open the URL directly. Press *
 
 ## 2. What is implemented
 
-| Brief requirement           | Implementation                                                                                                                        |
-| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| Document ingestion          | Text-based PDF, TXT, Markdown, CSV, or pasted text; 15 MB, 100 pages, and 120,000 characters per document                             |
-| Six legal categories        | Personal information, advice/recommendations, international affairs, law enforcement, solicitor-client privilege, Cabinet confidences |
-| AI classification           | Gemini structured output with exact-quote matching, confidence validation, category validation and overlap rejection                  |
-| Offline first pass          | Clearly labelled local pattern rules; never presented as live AI                                                                      |
-| Legal grounding             | Section-specific explanations and links to the Justice Laws website; Cabinet confidences labelled as an exclusion                     |
-| Human review                | Every suggestion requires approval or disclosure; disclosure and category changes require a rationale                                 |
-| Low confidence              | Suggestions below 85% receive an extra warning; all confidence levels still require review                                            |
-| Independent leak testing    | Separate analysis pass takes only the candidate redacted text, without original spans or hidden values                                |
-| Reconstruction scoring      | Exact/partial/unverified/untested guesses scored outside the tester against withheld values                                           |
-| Mosaic effect               | Contextual identification findings with visible clues, severity, officer rationale and fresh checks after changes                     |
-| Consistency                 | 768-dimensional similarity search; pgvector with PostgreSQL, normalized word vectors locally, Gemini embeddings when configured       |
-| Prior release references    | Specific source/reference IDs, excerpts, similarity values, treatment, and contextual officer assessment                              |
-| Real public starter corpus  | Sixteen source-linked proactive publications; references use `PD-GAC-…`, not invented ATI request numbers                             |
-| Original/release comparison | Original vs candidate; candidate vs an officer-attached actual published release with its source URL                                  |
-| Officer dashboard           | Stored-request counts, pending suggestions, release totals, overdue targets, throughput, risk and open findings                       |
-| Requester portal            | Create a request, follow progress, and download only the requester’s own approved redacted records                                    |
-| Authentication              | Auth0 OIDC and namespaced roles; demo role switching unavailable with Auth0 enabled                                                   |
-| Voice                       | ElevenLabs on demand; browser speech and a readable transcript without credentials                                                    |
-| Export                      | Fresh redacted PDF, text, officer decision JSON, and activity JSON; original PDF bytes are never included in exports                  |
-| Release controls            | Block on pending decisions, open findings, stale checks, absent full-document attestation, or no documents                            |
-| Audit                       | Sequenced SHA-256 hash-linked activity with canonical JSON hashing and verification                                                   |
-| Presentation                | Responsive layouts, dark theme, local fonts, custom illustrations, keyboard shortcuts, focus-managed dialogs                          |
-| Team/demo delivery          | Three-person ownership plan, API contract, demo script, presentation deck and deployment files                                        |
+| Brief requirement           | Implementation                                                                                                                              |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| Document ingestion          | Text-based PDF, TXT, Markdown, CSV, or pasted text; 15 MB, 100 pages, and 120,000 characters per document                                   |
+| Six legal categories        | Personal information, advice/recommendations, international affairs, law enforcement, solicitor-client privilege, Cabinet confidences       |
+| AI classification           | Gemini structured output with exact-quote matching, confidence validation, category validation and overlap rejection                        |
+| Offline first pass          | Clearly labelled local pattern rules; never presented as live AI                                                                            |
+| Legal grounding             | Section-specific explanations and links to the Justice Laws website; Cabinet confidences labelled as an exclusion                           |
+| Human review                | Every suggestion requires approval or disclosure; disclosure and category changes require a rationale                                       |
+| Low confidence              | Suggestions below 85% receive an extra warning; all confidence levels still require review                                                  |
+| Independent leak testing    | Separate analysis pass takes only the candidate redacted text, without original spans or hidden values                                      |
+| Reconstruction scoring      | Exact/partial/unverified/untested guesses scored outside the tester against withheld values                                                 |
+| Mosaic effect               | Contextual identification findings with visible clues, severity, officer rationale and fresh checks after changes                           |
+| Consistency                 | 768-dimensional similarity search; pgvector with PostgreSQL, normalized word vectors locally, Gemini embeddings when configured             |
+| Prior release references    | Specific source/reference IDs, excerpts, similarity values, treatment, and contextual officer assessment                                    |
+| Real public starter corpus  | Sixteen source-linked proactive publications; references use `PD-GAC-…`, not invented ATI request numbers                                   |
+| Original/release comparison | Original vs candidate; candidate vs an officer-attached actual published release with its source URL                                        |
+| Officer dashboard           | Stored-request counts, pending suggestions, release totals, overdue targets, throughput, risk and open findings                             |
+| Requester portal            | Create a request, follow progress, and download only the requester’s own approved redacted records                                          |
+| Authentication              | Auth0 OIDC and namespaced roles; demo role switching unavailable with Auth0 enabled                                                         |
+| Voice                       | ElevenLabs on demand; browser speech and a readable transcript without credentials                                                          |
+| Export                      | Fresh redacted PDF, text, officer decision JSON, and activity JSON; original PDF bytes are never included in exports                        |
+| Release controls            | Automatic checks after candidate edits; block on pending decisions, open findings, stale/failed checks, absent attestation, or no documents |
+| Audit                       | Sequenced SHA-256 hash-linked activity with canonical JSON hashing and verification                                                         |
+| Presentation                | Responsive layouts, dark theme, local fonts, custom illustrations, keyboard shortcuts, focus-managed dialogs                                |
+| Team/demo delivery          | Three-person ownership plan, API contract, demo script, presentation deck and deployment files                                              |
 
 ## 3. Try the full workflow
 
@@ -57,7 +59,7 @@ If a server is already running in this workspace, open the URL directly. Press *
 3. **Approve withholding**, or select **Disclose / change** and record your reasoning.
 4. Try **Original**, **Redacted**, and **Compare**. The redacted view replaces hidden text instead of merely covering it.
 5. On the **Integrity** tab, examine the identifying context and the similar prior release.
-6. To mitigate the contextual leak, add a manual redaction for the full sentence beginning “The only officer leading the Northern Region pilot…”. Choose a category and record a justification. This invalidates old checks.
+6. To mitigate the contextual leak, add a manual redaction for the full sentence beginning “The only officer leading the Northern Region pilot…”. Choose a category and record a justification. This automatically replaces old checks with a fresh pass.
 7. **Run integrity checks**. Resolve any remaining findings with an explicit rationale. Contextual differences can justify different treatment; a similarity match is not a legal ruling.
 8. Confirm **I have reviewed the entire record** only after reviewing unmarked content and statutory conditions.
 9. **Approve release**, then confirm **Approve & release**.

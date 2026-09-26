@@ -1,0 +1,113 @@
+export type Page =
+  'overview' | 'requests' | 'workspace' | 'integrity' | 'library' | 'activity' | 'settings';
+export type User = { id: string; name: string; role: 'officer' | 'requester' };
+export type Category = {
+  id: string;
+  name: string;
+  section: string;
+  color: string;
+  kind: string;
+  summary: string;
+  url: string;
+};
+export type Span = {
+  id: string;
+  start: number;
+  end: number;
+  category: string;
+  confidence: number;
+  justification: string;
+  decision: 'pending' | 'approved' | 'dismissed';
+  reviewNote: string;
+  source: string;
+  reviewedBy?: string;
+};
+export type Finding = {
+  id: string;
+  clue?: string;
+  inference: string;
+  guess?: string;
+  severity?: string;
+  reconstruction?: string;
+  resolved: boolean;
+  note: string;
+  spanId?: string;
+  priorId?: string;
+  requestRef?: string;
+  excerpt?: string;
+  sourceUrl?: string;
+  synthetic?: boolean;
+  similarity?: number;
+};
+export type Integrity = {
+  leaks: Finding[];
+  conflicts: Finding[];
+  risk: number;
+  tester: string;
+  checkedAt: string;
+  outputHash: string;
+};
+export type Doc = {
+  id: string;
+  name: string;
+  text: string;
+  pages: number;
+  spans: Span[];
+  integrity: Integrity | null;
+  integrityError?: string;
+  engine: string;
+  warnings: string[];
+  attested: boolean;
+  reference?: { text: string; sourceUrl: string };
+};
+export type RequestSummary = {
+  id: string;
+  title: string;
+  department: string;
+  description: string;
+  createdAt: string;
+  dueAt: string;
+  status: string;
+  priority: string;
+  synthetic: boolean;
+  releasedAt: string | null;
+  documentCount: number;
+  pages: number;
+  pending: number;
+  risk: number;
+  conflicts: number;
+  leaks: number;
+};
+export type RequestRecord = RequestSummary & { documents: Doc[] };
+export type Corpus = {
+  id: string;
+  requestRef: string;
+  title: string;
+  text: string;
+  treatment: string;
+  category: string | null;
+  sourceUrl: string | null;
+  synthetic: boolean;
+  embeddingModel: string;
+  addedAt: string;
+};
+export type Audit = {
+  id: string;
+  requestId: string | null;
+  action: string;
+  detail: string;
+  actor: string;
+  at: string;
+  hash: string;
+  previousHash: string;
+};
+export type Settings = {
+  demo: boolean;
+  storage: string;
+  classification: string;
+  embeddings: string;
+  auth: string;
+  voice: string;
+  model: string;
+  threshold: number;
+};

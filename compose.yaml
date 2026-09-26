@@ -1,0 +1,30 @@
+services:
+  redactor:
+    build: .
+    ports:
+      - '127.0.0.1:3001:3001'
+    env_file: .env
+    environment:
+      HOST: 0.0.0.0
+      DATABASE_URL: postgresql://redactor:redactor_local_dev@db:5432/redactor
+      DATABASE_SSL: 'false'
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+  db:
+    image: pgvector/pgvector:pg17
+    environment:
+      POSTGRES_USER: redactor
+      POSTGRES_PASSWORD: redactor_local_dev
+      POSTGRES_DB: redactor
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U redactor -d redactor']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+volumes:
+  postgres_data:

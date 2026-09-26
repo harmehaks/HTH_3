@@ -1,0 +1,18 @@
+[
+  {"id":"personal-email","text":"Personal contact: robin.lee@example.net","expected":["personal"],"synthetic":true},
+  {"id":"personal-name","text":"Employee name: Robin Lee","expected":["personal"],"synthetic":true},
+  {"id":"personal-phone","text":"Private telephone: 613-555-0192","expected":["personal"],"synthetic":true},
+  {"id":"advice-pilot","text":"We recommend delaying implementation until internal readiness is assessed.","expected":["advice"],"synthetic":true},
+  {"id":"advice-option","text":"Recommended option: adopt the unpublished policy alternative.","expected":["advice"],"synthetic":true},
+  {"id":"cabinet-memo","text":"Memorandum to Cabinet: proposals for the next ministerial discussion.","expected":["cabinet"],"synthetic":true},
+  {"id":"cabinet-confidence","text":"Cabinet confidence: agenda and deliberations for the upcoming meeting.","expected":["cabinet"],"synthetic":true},
+  {"id":"privilege-advice","text":"Privileged legal advice: counsel advises that the confidential agreement is unenforceable.","expected":["privilege"],"synthetic":true},
+  {"id":"privilege-memo","text":"Solicitor-client privileged: confidential litigation strategy from counsel.","expected":["privilege"],"synthetic":true},
+  {"id":"international-position","text":"Negotiating position: the confidential fallback in the upcoming bilateral talks.","expected":["international"],"synthetic":true},
+  {"id":"international-correspondence","text":"Confidential diplomatic: undisclosed negotiating priorities shared with an ally.","expected":["international"],"synthetic":true},
+  {"id":"enforcement-plan","text":"Investigation strategy: undisclosed surveillance steps in an active investigation.","expected":["enforcement"],"synthetic":true},
+  {"id":"enforcement-informant","text":"Confidential informant: details that could identify a cooperating witness.","expected":["enforcement"],"synthetic":true},
+  {"id":"public-budget","text":"The public implementation budget is $2.4 million.","expected":[],"synthetic":true},
+  {"id":"public-results","text":"Aggregate results show an average processing-time reduction of 18%.","expected":[],"synthetic":true},
+  {"id":"public-standards","text":"Public-facing service standards will remain unchanged.","expected":[],"synthetic":true}
+]

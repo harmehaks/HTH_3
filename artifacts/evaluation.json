@@ -1,0 +1,306 @@
+{
+  "at": "2026-09-26T20:19:15.542Z",
+  "engine": "Local pattern rules",
+  "scope": "Category-level smoke evaluation on 16 synthetic fixtures and 16 short public proactive-publication excerpts. This is not a validated legal benchmark or a span-recall measurement.",
+  "cases": 32,
+  "passed": 32,
+  "truePositives": 13,
+  "falsePositives": 0,
+  "falseNegatives": 0,
+  "precision": 1,
+  "recall": 1,
+  "results": [
+    {
+      "id": "personal-email",
+      "synthetic": true,
+      "expected": [
+        "personal"
+      ],
+      "predicted": [
+        "personal"
+      ],
+      "pass": true
+    },
+    {
+      "id": "personal-name",
+      "synthetic": true,
+      "expected": [
+        "personal"
+      ],
+      "predicted": [
+        "personal"
+      ],
+      "pass": true
+    },
+    {
+      "id": "personal-phone",
+      "synthetic": true,
+      "expected": [
+        "personal"
+      ],
+      "predicted": [
+        "personal"
+      ],
+      "pass": true
+    },
+    {
+      "id": "advice-pilot",
+      "synthetic": true,
+      "expected": [
+        "advice"
+      ],
+      "predicted": [
+        "advice"
+      ],
+      "pass": true
+    },
+    {
+      "id": "advice-option",
+      "synthetic": true,
+      "expected": [
+        "advice"
+      ],
+      "predicted": [
+        "advice"
+      ],
+      "pass": true
+    },
+    {
+      "id": "cabinet-memo",
+      "synthetic": true,
+      "expected": [
+        "cabinet"
+      ],
+      "predicted": [
+        "cabinet"
+      ],
+      "pass": true
+    },
+    {
+      "id": "cabinet-confidence",
+      "synthetic": true,
+      "expected": [
+        "cabinet"
+      ],
+      "predicted": [
+        "cabinet"
+      ],
+      "pass": true
+    },
+    {
+      "id": "privilege-advice",
+      "synthetic": true,
+      "expected": [
+        "privilege"
+      ],
+      "predicted": [
+        "privilege"
+      ],
+      "pass": true
+    },
+    {
+      "id": "privilege-memo",
+      "synthetic": true,
+      "expected": [
+        "privilege"
+      ],
+      "predicted": [
+        "privilege"
+      ],
+      "pass": true
+    },
+    {
+      "id": "international-position",
+      "synthetic": true,
+      "expected": [
+        "international"
+      ],
+      "predicted": [
+        "international"
+      ],
+      "pass": true
+    },
+    {
+      "id": "international-correspondence",
+      "synthetic": true,
+      "expected": [
+        "international"
+      ],
+      "predicted": [
+        "international"
+      ],
+      "pass": true
+    },
+    {
+      "id": "enforcement-plan",
+      "synthetic": true,
+      "expected": [
+        "enforcement"
+      ],
+      "predicted": [
+        "enforcement"
+      ],
+      "pass": true
+    },
+    {
+      "id": "enforcement-informant",
+      "synthetic": true,
+      "expected": [
+        "enforcement"
+      ],
+      "predicted": [
+        "enforcement"
+      ],
+      "pass": true
+    },
+    {
+      "id": "public-budget",
+      "synthetic": true,
+      "expected": [],
+      "predicted": [],
+      "pass": true
+    },
+    {
+      "id": "public-results",
+      "synthetic": true,
+      "expected": [],
+      "predicted": [],
+      "pass": true
+    },
+    {
+      "id": "public-standards",
+      "synthetic": true,
+      "expected": [],
+      "predicted": [],
+      "pass": true
+    },
+    {
+      "id": "public-2026-06-foreign-affairs",
+      "synthetic": false,
+      "source": "https://international.canada.ca/en/global-affairs/corporate/transparency/briefing-documents/briefing-books/2026-06-foreign-affairs",
+      "expected": [],
+      "predicted": [],
+      "pass": true
+    },
+    {
+      "id": "public-2026-06-development",
+      "synthetic": false,
+      "source": "https://international.canada.ca/en/global-affairs/corporate/transparency/briefing-documents/briefing-books/2026-06-development",
+      "expected": [],
+      "predicted": [],
+      "pass": true
+    },
+    {
+      "id": "public-2026-06-trade",
+      "synthetic": false,
+      "source": "https://international.canada.ca/en/global-affairs/corporate/transparency/briefing-documents/briefing-books/2026-06-trade",
+      "expected": [],
+      "predicted": [],
+      "pass": true
+    },
+    {
+      "id": "public-2025-05-foreign-affairs",
+      "synthetic": false,
+      "source": "https://international.canada.ca/en/global-affairs/corporate/transparency/briefing-documents/briefing-books/2025-05-foreign-affairs",
+      "expected": [],
+      "predicted": [],
+      "pass": true
+    },
+    {
+      "id": "public-2025-05-international-trade",
+      "synthetic": false,
+      "source": "https://international.canada.ca/en/global-affairs/corporate/transparency/briefing-documents/briefing-books/2025-05-international-trade",
+      "expected": [],
+      "predicted": [],
+      "pass": true
+    },
+    {
+      "id": "public-2025-05-international-development",
+      "synthetic": false,
+      "source": "https://international.canada.ca/en/global-affairs/corporate/transparency/briefing-documents/briefing-books/2025-05-international-development",
+      "expected": [],
+      "predicted": [],
+      "pass": true
+    },
+    {
+      "id": "public-2025-03-international-trade",
+      "synthetic": false,
+      "source": "https://international.canada.ca/en/global-affairs/corporate/transparency/briefing-documents/briefing-books/2025-03-international-trade",
+      "expected": [],
+      "predicted": [],
+      "pass": true
+    },
+    {
+      "id": "public-2024-07-dma-international-development",
+      "synthetic": false,
+      "source": "https://international.canada.ca/en/global-affairs/corporate/transparency/briefing-documents/briefing-books/2024-07-dma-international-development",
+      "expected": [],
+      "predicted": [],
+      "pass": true
+    },
+    {
+      "id": "public-2023-07-international-development",
+      "synthetic": false,
+      "source": "https://international.canada.ca/en/global-affairs/corporate/transparency/briefing-documents/briefing-books/2023-07-international-development",
+      "expected": [],
+      "predicted": [],
+      "pass": true
+    },
+    {
+      "id": "public-2022-10-uss-foreign-affairs",
+      "synthetic": false,
+      "source": "https://international.canada.ca/en/global-affairs/corporate/transparency/briefing-documents/briefing-books/2022-10-uss-foreign-affairs",
+      "expected": [],
+      "predicted": [],
+      "pass": true
+    },
+    {
+      "id": "public-2022-10-dmt-international-trade",
+      "synthetic": false,
+      "source": "https://international.canada.ca/en/global-affairs/corporate/transparency/briefing-documents/briefing-books/2022-10-dmt-international-trade",
+      "expected": [],
+      "predicted": [],
+      "pass": true
+    },
+    {
+      "id": "public-2021-10-foreign-affairs",
+      "synthetic": false,
+      "source": "https://international.canada.ca/en/global-affairs/corporate/transparency/briefing-documents/briefing-books/2021-10-foreign-affairs",
+      "expected": [],
+      "predicted": [],
+      "pass": true
+    },
+    {
+      "id": "public-2021-10-international-development",
+      "synthetic": false,
+      "source": "https://international.canada.ca/en/global-affairs/corporate/transparency/briefing-documents/briefing-books/2021-10-international-development",
+      "expected": [],
+      "predicted": [],
+      "pass": true
+    },
+    {
+      "id": "public-2021-10-international-trade",
+      "synthetic": false,
+      "source": "https://international.canada.ca/en/global-affairs/corporate/transparency/briefing-documents/briefing-books/2021-10-international-trade",
+      "expected": [],
+      "predicted": [],
+      "pass": true
+    },
+    {
+      "id": "public-2021-01-foreign-affairs",
+      "synthetic": false,
+      "source": "https://international.canada.ca/en/global-affairs/corporate/transparency/briefing-documents/briefing-books/2021-01-foreign-affairs",
+      "expected": [],
+      "predicted": [],
+      "pass": true
+    },
+    {
+      "id": "public-2019-11-international-development",
+      "synthetic": false,
+      "source": "https://international.canada.ca/en/global-affairs/corporate/transparency/briefing-documents/briefing-books/2019-11-international-development",
+      "expected": [],
+      "predicted": [],
+      "pass": true
+    }
+  ]
+}
