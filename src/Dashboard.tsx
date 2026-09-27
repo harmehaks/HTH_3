@@ -5,7 +5,6 @@ import {
   Clock3,
   ShieldCheck,
   ScanLine,
-  Headphones,
   ChevronRight,
   Activity,
   Sparkles,
@@ -22,10 +21,9 @@ type Props = {
   onOpen: (id: string) => void;
   onNew: () => void;
   onPage: (p: Page) => void;
-  onBriefing: () => void;
   name: string;
 };
-export default function Dashboard({ requests, onOpen, onNew, onPage, onBriefing, name }: Props) {
+export default function Dashboard({ requests, onOpen, onNew, onPage, name }: Props) {
   const [events, setEvents] = useState<Audit[]>([]);
   useEffect(() => {
     api<{ events: Audit[] }>('/audit')
@@ -314,7 +312,7 @@ export default function Dashboard({ requests, onOpen, onNew, onPage, onBriefing,
                   {compliance}
                   <span>%</span>
                 </strong>
-                <small>WITHIN TARGET</small>
+                <small>IN TARGET</small>
               </div>
             </div>
             <div className="target-legend">
@@ -336,18 +334,6 @@ export default function Dashboard({ requests, onOpen, onNew, onPage, onBriefing,
             Target dates are indicative. Statutory extensions require separate assessment.
           </p>
         </div>
-      </div>
-      <div className="briefing-strip">
-        <div className="briefing-icon">
-          <Headphones size={22} />
-        </div>
-        <div>
-          <h3>Your morning briefing, minus the reading.</h3>
-          <p>A quick spoken rundown of your queue, risks, and decisions waiting on you.</p>
-        </div>
-        <button className="button secondary" onClick={onBriefing}>
-          <Headphones size={15} /> Listen to briefing <ArrowUpRight size={15} />
-        </button>
       </div>
       {events.length > 0 && (
         <div className="recent-activity">

@@ -16,15 +16,17 @@ export function IconButton({
   label,
   onClick,
   disabled = false,
+  className = '',
 }: {
   children: ReactNode;
   label: string;
   onClick: () => void;
   disabled?: boolean;
+  className?: string;
 }) {
   return (
     <button
-      className="icon-button"
+      className={`icon-button ${className}`.trim()}
       aria-label={label}
       title={label}
       onClick={onClick}

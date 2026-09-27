@@ -67,10 +67,20 @@ export function NewRequestDialog({
   return (
     <Modal
       title={requester ? 'What would you like to know?' : 'Create an access request'}
-      subtitle="Give your request a clear name and a little context."
+      subtitle={
+        requester
+          ? 'Give your request a clear name and a little context.'
+          : 'Log this on behalf of a requester — for example, one received by phone, mail, or in person.'
+      }
       onClose={onClose}
     >
       <form onSubmit={submit}>
+        {!requester && (
+          <div className="intake-badge">
+            <Badge tone="amber">Officer intake</Badge>
+            <span>This creates a request for someone else, not for your own account.</span>
+          </div>
+        )}
         <label>
           Request title
           <input
@@ -107,6 +117,12 @@ export function NewRequestDialog({
               Assign records to the authenticated requester who should receive the release.
             </small>
           </label>
+        )}
+        {!requester && demo && (
+          <p className="intake-note">
+            Demo mode automatically assigns this request to the sample requester account, Jordan
+            Lee.
+          </p>
         )}
         <div className="form-note">
           <ShieldCheck size={16} />
@@ -537,7 +553,7 @@ export function BriefingDialog({ onClose, notify }: { onClose: () => void; notif
       if (provider === 'ElevenLabs') {
         const r = await fetch('/api/briefing/audio', {
           method: 'POST',
-          headers: { 'X-Redactor-Client': 'workspace' },
+          headers: { 'X-Mr-Redactor-Client': 'workspace' },
         });
         if (!r.ok) throw new Error((await r.json()).error);
         const a = new Audio(URL.createObjectURL(await r.blob()));

@@ -14,6 +14,7 @@ try {
   page.on('console', (m) => {
     if (m.type() === 'error') errors.push(m.text());
   });
+  await page.addInitScript(() => sessionStorage.setItem('mr-redactor-entered', '1'));
   await page.goto('http://127.0.0.1:3001');
   await page.getByRole('heading', { name: 'A clearer path to disclosure.' }).waitFor();
   await page.evaluate(() => document.fonts.ready);

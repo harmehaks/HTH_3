@@ -1,6 +1,9 @@
 import { test, expect } from '@playwright/test';
-test.beforeEach(async ({ page }) => {
+test.beforeEach(async ({ page }, testInfo) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
+  // The landing gate is a presentation flag, not a security boundary; the sign-in spec opts out.
+  if (!testInfo.title.startsWith('sign-in'))
+    await page.addInitScript(() => sessionStorage.setItem('mr-redactor-entered', '1'));
 });
 test('dashboard, all navigation, search, theme and responsive layout work', async ({ page }) => {
   const errors = [];
@@ -36,7 +39,11 @@ test('dashboard, all navigation, search, theme and responsive layout work', asyn
     await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
   ).toBeTruthy();
   await page.getByRole('button', { name: 'Open navigation' }).click();
-  await page.getByRole('button', { name: 'Redaction workspace', exact: true }).click();
+  await page.getByRole('button', { name: 'Requests', exact: true }).click();
+  await page
+    .getByRole('button', { name: 'Border services modernization', exact: false })
+    .first()
+    .click();
   await expect(page.getByRole('button', { name: 'Original', exact: true })).toBeVisible();
   await page.screenshot({ path: 'artifacts/review-mobile.png', fullPage: true });
   expect(errors).toEqual([]);
@@ -169,7 +176,7 @@ test('published reference comparison, manual redaction and officer export choice
   await expect(page.getByRole('link', { name: /Redacted text/ })).toBeVisible();
   await expect(page.getByRole('link', { name: /Officer decision log/ })).toBeVisible();
 });
-test('public starter library, briefing transcript and presentation deck are available', async ({
+test('public starter library and presentation deck are available', async ({
   page,
 }) => {
   await page.goto('/');
@@ -180,12 +187,6 @@ test('public starter library, briefing transcript and presentation deck are avai
   await expect(page.getByRole('link', { name: 'View public source' })).toHaveAttribute(
     'href',
     /international.canada.ca/,
-  );
-  await page.getByRole('button', { name: 'Close dialog' }).click();
-  await page.getByRole('button', { name: 'Overview', exact: true }).click();
-  await page.getByRole('button', { name: /Listen to briefing/ }).click();
-  await expect(page.getByRole('dialog', { name: 'Your workspace briefing' })).toContainText(
-    'suggested redactions need officer review',
   );
   await page.getByRole('button', { name: 'Close dialog' }).click();
   await page.goto('/pitch.html');
@@ -200,3 +201,28 @@ test('public starter library, briefing transcript and presentation deck are avai
     await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
   ).toBeTruthy();
 });
+
+test('sign-in gates the workspace and never lets email/password choose the officer role', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await expect(page.getByRole('heading', { name: /Every line/ })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Sign in' })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Sign in', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Sign in' })).toBeVisible();
+  // The role toggle is a demo affordance; it must never reach the server as an authorization claim.
+  await expect(page.getByRole('button', { name: /ATIP officer/ })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  await page.getByRole('button', { name: /Requester/ }).click();
+  await expect(page.getByRole('button', { name: /Requester/ })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  await page.getByPlaceholder('you@canada.ca').fill('jordan.lee@example.net');
+  await page.getByRole('button', { name: 'Enter as requester' }).click();
+  await expect(page.getByRole('heading', { name: 'Information, a little more accessible.' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Integrity lab', exact: true })).toHaveCount(0);
+});
+

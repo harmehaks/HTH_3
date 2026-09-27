@@ -25,7 +25,7 @@ async function fixture() {
       method,
       headers: {
         'Content-Type': 'application/json',
-        'X-Redactor-Client': 'workspace',
+        'X-Mr-Redactor-Client': 'workspace',
         ...(cookie ? { Cookie: cookie } : {}),
         ...headers,
       },
@@ -389,7 +389,7 @@ test('input validation and cross-origin modification protections reject invalid 
         await f.request('/requests', {
           method: 'POST',
           body: {},
-          headers: { 'X-Redactor-Client': '' },
+          headers: { 'X-Mr-Redactor-Client': '' },
         })
       ).status,
       403,
@@ -448,7 +448,7 @@ test('multipart text and PDF uploads are analyzed and unsupported files are reje
     );
     const uploaded = await fetch(f.base + `/api/requests/${r.id}/documents`, {
       method: 'POST',
-      headers: { 'X-Redactor-Client': 'workspace' },
+      headers: { 'X-Mr-Redactor-Client': 'workspace' },
       body: form,
     });
     assert.equal(uploaded.status, 201);
@@ -457,7 +457,7 @@ test('multipart text and PDF uploads are analyzed and unsupported files are reje
     pdfForm.append('file', new Blob([draft.data], { type: 'application/pdf' }), 'safe.pdf');
     const imported = await fetch(f.base + `/api/requests/${r.id}/documents`, {
       method: 'POST',
-      headers: { 'X-Redactor-Client': 'workspace' },
+      headers: { 'X-Mr-Redactor-Client': 'workspace' },
       body: pdfForm,
     });
     assert.equal(imported.status, 201);
@@ -465,7 +465,7 @@ test('multipart text and PDF uploads are analyzed and unsupported files are reje
     exe.append('file', new Blob(['x']), 'test.exe');
     const rejected = await fetch(f.base + `/api/requests/${r.id}/documents`, {
       method: 'POST',
-      headers: { 'X-Redactor-Client': 'workspace' },
+      headers: { 'X-Mr-Redactor-Client': 'workspace' },
       body: exe,
     });
     assert.equal(rejected.status, 400);
@@ -584,6 +584,89 @@ test('oversized pasted records are rejected instead of silently truncating sensi
       body: { text: 'x'.repeat(20001), requestRef: 'A-1', sourceUrl: 'https://example.gov/record' },
     });
     assert.equal(corpus.status, 400);
+  } finally {
+    await f.close();
+  }
+});
+test('a wrongly uploaded document can be removed, and a request can be deleted, with a rationale', async () => {
+  const f = await fixture();
+  try {
+    let r = await f.make();
+    const wrong = (
+      await f.request(`/requests/${r.id}/documents`, {
+        method: 'POST',
+        body: { text: 'Wrong file entirely.', name: 'wrong.txt' },
+      })
+    ).data;
+    const docId = wrong.documents[0].id;
+    assert.equal(wrong.status, 'in_review');
+    assert.equal(
+      (
+        await f.request(`/requests/${r.id}/documents/${docId}`, {
+          method: 'DELETE',
+          body: {},
+        })
+      ).status,
+      400,
+    );
+    const removed = await f.request(`/requests/${r.id}/documents/${docId}`, {
+      method: 'DELETE',
+      body: { note: 'Wrong file uploaded in error.' },
+    });
+    assert.equal(removed.status, 200);
+    assert.equal(removed.data.documents.length, 0);
+    assert.equal(removed.data.status, 'received');
+    const audit = await f.request('/audit');
+    assert.ok(audit.data.events.some((e) => e.action === 'Document removed'));
+    const role = await f.request('/session/role', { method: 'POST', body: { role: 'requester' } }),
+      cookie = role.headers.get('set-cookie').split(';')[0];
+    assert.equal(
+      (
+        await f.request(`/requests/${r.id}`, {
+          cookie,
+          method: 'DELETE',
+          body: { note: 'Not an officer.' },
+        })
+      ).status,
+      403,
+    );
+    assert.equal(
+      (await f.request(`/requests/${r.id}`, { method: 'DELETE', body: {} })).status,
+      400,
+    );
+    const deleted = await f.request(`/requests/${r.id}`, {
+      method: 'DELETE',
+      body: { note: 'Created by mistake.' },
+    });
+    assert.equal(deleted.status, 200);
+    assert.equal((await f.request(`/requests/${r.id}`)).status, 404);
+
+    r = await f.make();
+    const doc = (
+      await f.request(`/requests/${r.id}/documents`, {
+        method: 'POST',
+        body: { text: 'Public information.\nEmployee name: Secret Person', name: 'record.txt' },
+      })
+    ).data.documents[0];
+    for (const s of doc.spans)
+      await f.request(`/requests/${r.id}/documents/${doc.id}/spans/${s.id}`, {
+        method: 'PATCH',
+        body: { decision: 'approved' },
+      });
+    await f.request(`/requests/${r.id}/documents/${doc.id}/attestation`, {
+      method: 'PATCH',
+      body: { attested: true },
+    });
+    await f.request(`/requests/${r.id}/release`, { method: 'POST', body: {} });
+    assert.equal(
+      (
+        await f.request(`/requests/${r.id}`, {
+          method: 'DELETE',
+          body: { note: 'Attempt on a released request.' },
+        })
+      ).status,
+      409,
+    );
   } finally {
     await f.close();
   }

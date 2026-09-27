@@ -83,7 +83,7 @@ export function createApp(store, { demo = process.env.DEMO_MODE !== 'false', tes
     res.setHeader('Cache-Control', 'no-store');
     if (authEnabled && req.oidc?.isAuthenticated()) {
       const user = req.oidc.user,
-        roles = user[process.env.AUTH0_ROLES_CLAIM || 'https://redactor.app/roles'] || [];
+        roles = user[process.env.AUTH0_ROLES_CLAIM || 'https://mrredactor.app/roles'] || [];
       req.user = {
         id: user.sub,
         name: user.name || user.email,
@@ -114,7 +114,7 @@ export function createApp(store, { demo = process.env.DEMO_MODE !== 'false', tes
         )
           return next(fail(403, 'Cross-origin modification denied.'));
       }
-      if (req.get('x-redactor-client') !== 'workspace')
+      if (req.get('x-mr-redactor-client') !== 'workspace')
         return next(fail(403, 'Missing workspace request header.'));
     }
     next();
@@ -477,6 +477,24 @@ export function createApp(store, { demo = process.env.DEMO_MODE !== 'false', tes
       }),
     ),
   );
+  app.delete(
+    '/api/requests/:id/documents/:docId',
+    officer,
+    wrap(async (req, res) =>
+      locked(req.params.id, async () => {
+        const r = await getRequest(req.params.id);
+        mutable(r);
+        const d = getDoc(r, req.params.docId),
+          note = clean(req.body.note, 2000);
+        if (!note) throw fail(400, 'A reason is required to remove a document.');
+        r.documents = r.documents.filter((x) => x.id !== d.id);
+        if (!r.documents.length) r.status = 'received';
+        await store.put('request', r);
+        await audit(req, r.id, 'Document removed', `${d.name}: ${note}`);
+        res.json(r);
+      }),
+    ),
+  );
   app.post(
     '/api/requests/:id/integrity',
     officer,
@@ -609,6 +627,21 @@ export function createApp(store, { demo = process.env.DEMO_MODE !== 'false', tes
       }),
     ),
   );
+  app.delete(
+    '/api/requests/:id',
+    officer,
+    wrap(async (req, res) =>
+      locked(req.params.id, async () => {
+        const r = await getRequest(req.params.id),
+          note = clean(req.body.note, 2000);
+        mutable(r);
+        if (!note) throw fail(400, 'A reason is required to delete a request.');
+        await store.delete(r.id);
+        await audit(req, r.id, 'Request deleted', note);
+        res.json({ ok: true });
+      }),
+    ),
+  );
   app.get(
     '/api/requests/:id/export/:format',
     authenticated,
@@ -627,7 +660,7 @@ export function createApp(store, { demo = process.env.DEMO_MODE !== 'false', tes
         const pdf = new PDFDocument({
           size: 'A4',
           margin: 55,
-          info: { Title: `${r.id} - redacted release`, Author: 'Redactor' },
+          info: { Title: `${r.id} - redacted release`, Author: 'Mr. Redactor' },
         });
         pdf.pipe(res);
         docs.forEach((d, i) => {
@@ -636,7 +669,7 @@ export function createApp(store, { demo = process.env.DEMO_MODE !== 'false', tes
             .font('Helvetica-Bold')
             .fontSize(11)
             .fillColor('#164c3c')
-            .text('REDACTOR / ACCESS TO INFORMATION');
+            .text('MR. REDACTOR / ACCESS TO INFORMATION');
           pdf.moveDown().fontSize(18).text(r.title);
           pdf
             .moveDown()

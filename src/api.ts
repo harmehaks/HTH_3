@@ -4,7 +4,7 @@ export async function api<T>(path: string, options: RequestInit = {}): Promise<T
     ...options,
     headers: {
       ...(isForm ? {} : { 'Content-Type': 'application/json' }),
-      'X-Redactor-Client': 'workspace',
+      'X-Mr-Redactor-Client': 'workspace',
       ...options.headers,
     },
   });

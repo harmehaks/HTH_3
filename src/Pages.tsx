@@ -731,7 +731,7 @@ export function ActivityPage({
         </div>
         <button
           className="button secondary"
-          onClick={() => downloadJSON('redactor-activity.json', { valid, events })}
+          onClick={() => downloadJSON('mr-redactor-activity.json', { valid, events })}
         >
           <Download size={16} />
           Export activity
@@ -810,7 +810,7 @@ export function SettingsPage({ notify }: { notify: Notify }) {
       icon: <KeyRound size={23} />,
       enabled: settings.auth === 'Auth0',
       status: settings.auth,
-      env: 'DEMO_MODE=false\nSESSION_SECRET=<32+ random characters>\nAUTH0_ISSUER_BASE_URL=https://your-tenant.auth0.com\nAUTH0_CLIENT_ID=<application ID>\nAUTH0_CLIENT_SECRET=<application secret>\nAUTH0_BASE_URL=http://localhost:5173\nAUTH0_ROLES_CLAIM=https://redactor.app/roles',
+      env: 'DEMO_MODE=false\nSESSION_SECRET=<32+ random characters>\nAUTH0_ISSUER_BASE_URL=https://your-tenant.auth0.com\nAUTH0_CLIENT_ID=<application ID>\nAUTH0_CLIENT_SECRET=<application secret>\nAUTH0_BASE_URL=http://localhost:5173\nAUTH0_ROLES_CLAIM=https://mrredactor.app/roles',
     },
     {
       name: 'Tiger Data',
@@ -984,6 +984,7 @@ export function RequesterPortal({
         </button>
       </div>
       <div className="portal-banner">
+        <ParliamentHill />
         <div>
           <ShieldCheck size={27} />
           <h2>A clear view of what happens next.</h2>
@@ -1012,8 +1013,7 @@ export function RequesterPortal({
       <SectionHeading
         title="Your access requests"
         description={`${requests.length} requests in your portal`}
-      />
-      {visible.length === 0 ? (
+      />      {visible.length === 0 ? (
         <div className="panel">
           <Empty
             title="Start with a question"
@@ -1121,5 +1121,51 @@ export function RequesterPortal({
         </Modal>
       )}
     </>
+  );
+}
+// Parliament Hill silhouette: Centre Block, Peace Tower and the Library rotunda.
+export function ParliamentHill() {
+  return (
+    <svg
+      className="parliament-hill"
+      viewBox="0 0 1200 132"
+      preserveAspectRatio="xMidYMax meet"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <g fill="#0b0906">
+        <path d="M16 132v-22h30V92l14-16 14 16v18h30v22z" />
+        <path d="M96 132v-24h72v24z" />
+        <path d="M156 132V78l15-16 15 16v54z" />
+        <path d="M180 132v-28h118v28z" />
+        <path d="M292 132V96h68V82h136v14h68v36z" />
+        <path d="M398 96V34h60v62z" />
+        <path d="M428 2l34 32h-68z" />
+        <path d="M700 132V78l15-16 15 16v54z" />
+        <path d="M628 132v-28h84v28z" />
+        <path d="M740 132v-36l60-34 60 34v36z" />
+        <path d="M800 50l20 12h-40z" />
+        <path d="M860 132v-26h122v26z" />
+        <path d="M998 132V84l14-15 14 15v48z" />
+        <path d="M1022 132v-24h108v24z" />
+        <path d="M1108 132v-22h26V92l14-16 14 16v18h22v22z" />
+      </g>
+      <g fill="#e3d5b8" opacity="0.2">
+        <circle cx="428" cy="52" r="9" />
+      </g>
+      <g fill="#e3d5b8" opacity="0.1">
+        <rect x="330" y="104" width="8" height="20" rx="4" />
+        <rect x="352" y="104" width="8" height="20" rx="4" />
+        <rect x="520" y="104" width="8" height="20" rx="4" />
+        <rect x="542" y="104" width="8" height="20" rx="4" />
+        <rect x="778" y="104" width="9" height="22" rx="4.5" />
+        <rect x="812" y="104" width="9" height="22" rx="4.5" />
+        <rect x="210" y="112" width="8" height="18" rx="4" />
+        <rect x="238" y="112" width="8" height="18" rx="4" />
+        <rect x="900" y="114" width="8" height="18" rx="4" />
+        <rect x="930" y="114" width="8" height="18" rx="4" />
+        <rect x="1060" y="114" width="8" height="18" rx="4" />
+      </g>
+    </svg>
   );
 }

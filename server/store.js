@@ -5,7 +5,7 @@ import { dirname, resolve } from 'node:path';
 
 export async function createStore({
   url = process.env.DATABASE_URL,
-  path = process.env.DATA_PATH || 'data/redactor.sqlite',
+  path = process.env.DATA_PATH || 'data/mr-redactor.sqlite',
 } = {}) {
   let sqlite, pool;
   if (url) {
@@ -58,6 +58,10 @@ export async function createStore({
           )
           .run(item.id, kind, JSON.stringify(item));
       return item;
+    },
+    async delete(id) {
+      if (pool) await pool.query('DELETE FROM records WHERE id=$1', [id]);
+      else sqlite.prepare('DELETE FROM records WHERE id=?').run(id);
     },
     async vector(id, embedding, model) {
       if (pool)
