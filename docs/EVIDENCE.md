@@ -1,5 +1,7 @@
 # Evidence and remaining gaps
 
+Current rebrand results and live-service limits are in [REBRAND_INTEGRATION.md](REBRAND_INTEGRATION.md). Local backend/browser and compiled-production checks passed, as did live Gemini. Hosted Tiger Data was unreachable over TCP on this network during the merged-code run. Earlier live cloud passes described below precede the rebrand and are preserved separately.
+
 The starter library contains eight **distinct completed ATI requests**, with one short visible excerpt per request, from government-hosted Library and Archives Canada release packages. These are historical records released through ATI, not eight contemporary operational case files. The sixteen Global Affairs proactive publications remain a separate source type.
 
 `samples/ati-releases.json` records real request IDs, official package pages, direct PDF URLs, one-based PDF page numbers, archival references, package dispositions, excerpt treatment, verification date and downloaded PDF SHA-256. Excerpts were checked against rendered scans; whitespace was normalized and OCR errors corrected against the visible page. `released` applies only to the visible excerpt, even when a package is partially withheld. Historical classification stamps do not establish current withholding treatment.
@@ -34,7 +36,7 @@ Real excerpts overlap the reference library and are short, hand-selected English
 
 | Integration | Implemented evidence                                                                            | Remaining verification                                                              |
 | ----------- | ----------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| Tiger Data  | Local PostgreSQL/pgvector verified; supplied cloud URL configured                               | Cloud TCP connection times out from Windows and Linux; hosted verification blocked  |
+| Tiger Data  | Hosted synthetic request workflow, pgvector/HNSW, release, PDF and server/store restart persistence passed | Live Auth0/voice and production deployment remain unverified                          |
 | Gemini      | Live Gemini 3.1 Flash Lite classification, leak testing and 768-dimensional embeddings verified | Small evaluation only; outputs still require officer review and available API quota |
 | ElevenLabs  | Transcript names two priority requests and an unresolved reference ID; only metadata is spoken  | Live synthesis requires credentials; browser speech is a separate fallback          |
 | Vultr       | Dockerfile and Compose assets                                                                   | No hosted deployment verified                                                       |
@@ -42,7 +44,7 @@ Real excerpts overlap the reference library and are short, hand-selected English
 
 Container files alone are not deployment evidence. Run the live evaluation after setting a key locally; never paste secrets into chat.
 
-The production image and local PostgreSQL 17/pgvector 0.8.6 path have now passed `npm run verify:container -- --skip-build` following a successful Docker build. The check exercises real JSONB persistence, cosine search, model isolation, HNSW indexing, the seeded ATI comparison, non-root execution, health, the UI and PDF export. See `artifacts/container-verification.json`. Hosted Tiger Data, Vultr and domain verification remain outstanding.
+The production image and local PostgreSQL 17/pgvector 0.8.6 path have now passed `npm run verify:container -- --skip-build` following a successful Docker build. The check exercises real JSONB persistence, cosine search, model isolation, HNSW indexing, the seeded ATI comparison, non-root execution, health, the UI and PDF export. See `artifacts/container-verification.json`. A subsequent hosted synthetic workflow also passed; Vultr and domain verification remain outstanding.
 
 ## Portable verification
 
@@ -54,6 +56,8 @@ Gemini 3.1 Flash Lite completed all eight public-release cases and six synthetic
 
 Gemini 2.5 Flash exhausted its per-model daily free quota; its partial results are preserved in artifacts/evidence-evaluation-gemini-2.5-flash.json. The listed 2.5 Flash Lite endpoint returned 404; that failed run is also preserved. The evaluator now paces requests, retries a temporary 429 once, and stops on daily-quota exhaustion or a rejected model/configuration. The verified model is configured locally, and all 40 reference excerpts were reindexed with gemini-embedding-001.
 
-The running app uses explicit SQLite storage with live Gemini. Restart with npm run start:local. The saved cloud URL remains in the ignored local environment file; npm start attempts that cloud connection. Tiger Cloud DNS resolves, but port 35060 times out from both Windows and a Linux container. Check service state and network/IP access before attempting hosted verification. No remote database write succeeded.
+The earlier running app used explicit SQLite storage with live Gemini. `npm run start:local` explicitly selects SQLite; `npm start` uses the saved cloud URL in the ignored `.env`. The earlier TCP timeouts subsequently cleared. Live Tiger verification enabled the required vector extension and passed authentication, TLS, JSONB round-trip and cosine similarity against pgvector 0.8.6. Synthetic test records used a temporary table with rollback; no persistent application records were changed. See `artifacts/live-tiger-verification.json`. Repeat the connection checks with `npm run verify:live -- --service=tiger`; add `--setup` only when enabling the required extension is intended.
 
 Model documentation: [Gemini 3.1 Flash Lite](https://ai.google.dev/gemini-api/docs/models/gemini-3.1-flash-lite). Quota information: [Google rate limits](https://ai.google.dev/gemini-api/docs/rate-limits).
+
+The later `npm run verify:live-workflow` run passed a full synthetic browser workflow against live Gemini and hosted Tiger Data, including an intentional synthetic consistency conflict, release gates, audit verification, requester PDF/receipt checks and persistence across a server/store restart. Its disposable cloud schema was removed successfully. The test uses demo officer/requester sessions, not live Auth0, and does not synthesize ElevenLabs audio. See `artifacts/live-workflow-verification.json`. Existing user records and the local `.env` are not changed by this verifier.

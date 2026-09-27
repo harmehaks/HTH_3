@@ -59,6 +59,10 @@ export async function createStore({
           .run(item.id, kind, JSON.stringify(item));
       return item;
     },
+    async delete(id) {
+      if (pool) await pool.query('DELETE FROM records WHERE id=$1', [id]);
+      else sqlite.prepare('DELETE FROM records WHERE id=?').run(id);
+    },
     async vector(id, embedding, model) {
       if (pool)
         await pool.query(

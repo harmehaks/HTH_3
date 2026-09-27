@@ -1,0 +1,109 @@
+{
+  "at": "2026-09-27T02:45:12.347Z",
+  "branch": "feat/redactor-disclosure-studio",
+  "bundle": "f36ae6940b92b49358b2f98e2488d840d6ae0b72",
+  "status": "local_checks_passed_live_cloud_blocked",
+  "checks": {
+    "backend": {
+      "status": "passed",
+      "tests": 35
+    },
+    "browser": {
+      "status": "passed",
+      "tests": 11,
+      "auth0": "Simulated provider session and redirect, not live login"
+    },
+    "productionBuild": "passed",
+    "compiledProduction": {
+      "at": "2026-09-27T02:42:03.920Z",
+      "productionOrigin": "http://127.0.0.1:10791",
+      "dashboard": true,
+      "presentation": true,
+      "fonts": true,
+      "api404": true,
+      "browserErrors": []
+    },
+    "gemini": {
+      "at": "2026-09-27T02:36:06.604Z",
+      "scope": "Live calls with synthetic data. PostgreSQL probe uses a temporary table and rollback. Auth0 discovery does not prove interactive login.",
+      "services": {
+        "Gemini": {
+          "status": "passed",
+          "model": "gemini-3.1-flash-lite",
+          "checks": {
+            "classification": {
+              "status": "passed",
+              "suggestions": 2,
+              "privateEmailRemoved": true,
+              "publicAggregatePreserved": true
+            },
+            "independentLeakTester": {
+              "status": "passed",
+              "findings": 1,
+              "input": "Redacted synthetic candidate only"
+            },
+            "embeddings": {
+              "status": "passed",
+              "dimensions": 768,
+              "model": "gemini-embedding-001",
+              "normalized": true
+            }
+          }
+        }
+      },
+      "status": "passed"
+    },
+    "tiger": {
+      "at": "2026-09-27T02:35:00.043Z",
+      "scope": "Live calls with synthetic data. PostgreSQL probe uses a temporary table and rollback. Auth0 discovery does not prove interactive login.",
+      "services": {
+        "Tiger Data": {
+          "status": "failed",
+          "checks": {
+            "dns": "passed"
+          },
+          "code": "ETIMEDOUT",
+          "reason": "Database TCP endpoint could not be reached; authentication and TLS were not reached.",
+          "stage": "TCP"
+        }
+      },
+      "status": "incomplete"
+    },
+    "cloudWorkflow": {
+      "at": "2026-09-27T02:34:09.209Z",
+      "status": "failed",
+      "checks": {},
+      "scope": "Compiled UI and actual API using live Gemini and Tiger Data in a separate disposable database schema. Only synthetic records. Officer/requester roles use demo sessions; Auth0 login and ElevenLabs synthesis are not covered.",
+      "error": {
+        "stage": "isolated cloud schema setup",
+        "code": "Error",
+        "message": "timeout expired"
+      },
+      "cleanup": "Test browser/server stopped and disposable schema removed; existing application data untouched."
+    },
+    "auth0Live": {
+      "status": "not_tested",
+      "reason": "Credentials absent"
+    },
+    "elevenLabsLive": {
+      "status": "not_tested",
+      "reason": "Credentials absent; API contract and transcript use mocks"
+    }
+  },
+  "fixes": [
+    "Auth0 session opens workspace",
+    "Briefing UI restored",
+    "Existing SQLite database filename retained",
+    "Both client header names accepted",
+    "Auth0 role claim namespace retained",
+    "Hidden panel inert; focus contained and restored"
+  ],
+  "preserved": [
+    "Existing .env and application databases",
+    "Newer disclosure features",
+    "Local verification helpers",
+    "Synthetic samples",
+    "Pre-integration stash"
+  ],
+  "priorCloudSuccess": "artifacts/pre-rebrand-live-workflow-verification.json (before this rebrand)"
+}

@@ -1,6 +1,10 @@
 import { test, expect } from '@playwright/test';
 test.beforeEach(async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Sign in', exact: true }).click();
+  await page.getByRole('button', { name: 'Enter as officer', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'A clearer path to disclosure.' })).toBeVisible();
 });
 
 test('real ATI comparison and page provenance are available without attaching a reference', async ({
@@ -54,7 +58,16 @@ test('dashboard, all navigation, search, theme and responsive layout work', asyn
   await page.screenshot({ path: 'artifacts/dashboard-dark.png', fullPage: true });
   await page.getByRole('button', { name: 'Switch to light theme' }).click();
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.screenshot({ path: 'artifacts/dashboard-mobile.png', fullPage: true });
+  await page.evaluate(async () => {
+    await document.fonts.ready;
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+  });
+  await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth)).toBe(390);
+  await page.screenshot({
+    path: 'artifacts/dashboard-mobile.png',
+    fullPage: true,
+    animations: 'disabled',
+  });
   expect(
     await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
   ).toBeTruthy();
@@ -116,7 +129,7 @@ test('a new record can be analyzed, reviewed, safely exported and released to re
   await page.getByRole('button', { name: 'Approve release', exact: true }).click();
   await page.getByRole('button', { name: 'Approve & release', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Download release', exact: true })).toBeVisible();
-  await page.getByRole('button', { name: /Sarah Mitchell/ }).click();
+  await page.getByRole('button', { name: 'Open profile menu' }).click();
   await page.getByRole('button', { name: 'Requester portal', exact: false }).click();
   await expect(
     page.getByRole('heading', { name: 'Information, a little more accessible.' }),
@@ -132,7 +145,7 @@ test('a new record can be analyzed, reviewed, safely exported and released to re
 });
 test('requester permissions and request submission are enforced', async ({ page }) => {
   await page.goto('/');
-  await page.getByRole('button', { name: /Sarah Mitchell/ }).click();
+  await page.getByRole('button', { name: 'Open profile menu' }).click();
   await page.getByRole('button', { name: 'Requester portal', exact: false }).click();
   await expect(page.getByRole('button', { name: 'Integrity lab', exact: true })).toHaveCount(0);
   const response = await page.request.get('/api/audit');

@@ -1,5 +1,5 @@
 {
-  "name": "redactor",
+  "name": "mr-redactor",
   "version": "1.0.0",
   "private": true,
   "type": "module",
@@ -19,11 +19,15 @@
     "format": "prettier --write src server tests scripts public docs *.js *.json *.md *.yaml",
     "typecheck": "tsc --noEmit",
     "verify:production": "node scripts/verify-production.js",
+    "verify:production:local": "node scripts/verify-local-production.js",
+    "verify:live": "node scripts/verify-live-integrations.js",
+    "verify:live-workflow": "node scripts/verify-live-workflow.js",
     "verify:container": "node scripts/verify-container.js",
     "evaluate:spans": "node scripts/benchmark-spans.js"
   },
   "dependencies": {
     "@fontsource/dm-sans": "^5.3.0",
+    "@fontsource/ibm-plex-mono": "^5.3.0",
     "@fontsource/manrope": "^5.3.0",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",

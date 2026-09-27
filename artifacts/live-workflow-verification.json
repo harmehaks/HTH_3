@@ -1,0 +1,12 @@
+{
+  "at": "2026-09-27T02:34:09.209Z",
+  "status": "failed",
+  "checks": {},
+  "scope": "Compiled UI and actual API using live Gemini and Tiger Data in a separate disposable database schema. Only synthetic records. Officer/requester roles use demo sessions; Auth0 login and ElevenLabs synthesis are not covered.",
+  "error": {
+    "stage": "isolated cloud schema setup",
+    "code": "Error",
+    "message": "timeout expired"
+  },
+  "cleanup": "Test browser/server stopped and disposable schema removed; existing application data untouched."
+}

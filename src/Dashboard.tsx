@@ -278,7 +278,7 @@ export default function Dashboard({ requests, onOpen, onNew, onPage, onBriefing,
                   {compliance}
                   <span>%</span>
                 </strong>
-                <small>WITHIN TARGET</small>
+                <small>IN TARGET</small>
               </div>
             </div>
             <div className="target-legend">
@@ -306,8 +306,11 @@ export default function Dashboard({ requests, onOpen, onNew, onPage, onBriefing,
           <Headphones size={22} />
         </div>
         <div>
-          <h3>Your morning briefing, minus the reading.</h3>
-          <p>A quick spoken rundown of your queue, risks, and decisions waiting on you.</p>
+          <h3>Your queue, spoken clearly.</h3>
+          <p>
+            A short briefing of priority requests, redactions waiting for review, and consistency
+            findings.
+          </p>
         </div>
         <button className="button secondary" onClick={onBriefing}>
           <Headphones size={15} /> Listen to briefing <ArrowUpRight size={15} />

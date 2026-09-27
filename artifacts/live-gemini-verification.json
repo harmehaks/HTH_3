@@ -1,0 +1,30 @@
+{
+  "at": "2026-09-27T02:36:06.604Z",
+  "scope": "Live calls with synthetic data. PostgreSQL probe uses a temporary table and rollback. Auth0 discovery does not prove interactive login.",
+  "services": {
+    "Gemini": {
+      "status": "passed",
+      "model": "gemini-3.1-flash-lite",
+      "checks": {
+        "classification": {
+          "status": "passed",
+          "suggestions": 2,
+          "privateEmailRemoved": true,
+          "publicAggregatePreserved": true
+        },
+        "independentLeakTester": {
+          "status": "passed",
+          "findings": 1,
+          "input": "Redacted synthetic candidate only"
+        },
+        "embeddings": {
+          "status": "passed",
+          "dimensions": 768,
+          "model": "gemini-embedding-001",
+          "normalized": true
+        }
+      }
+    }
+  },
+  "status": "passed"
+}

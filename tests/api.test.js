@@ -62,6 +62,76 @@ async function fixture() {
     },
   };
 }
+test('workspace modifications accept existing and bundled client headers but reject missing headers', async () => {
+  const f = await fixture();
+  try {
+    assert.equal(
+      (await f.request('/session/role', { method: 'POST', body: { role: 'officer' } })).status,
+      200,
+    );
+    assert.equal(
+      (
+        await f.request('/session/role', {
+          method: 'POST',
+          body: { role: 'officer' },
+          headers: {
+            'X-Redactor-Client': '',
+            'X-Mr-Redactor-Client': 'workspace',
+          },
+        })
+      ).status,
+      200,
+    );
+    assert.equal(
+      (
+        await f.request('/session/role', {
+          method: 'POST',
+          body: { role: 'officer' },
+          headers: {
+            'X-Redactor-Client': '',
+            'X-Mr-Redactor-Client': '',
+          },
+        })
+      ).status,
+      403,
+    );
+  } finally {
+    await f.close();
+  }
+});
+
+test('the configured Auth0 origin works with a trailing slash and rejects a different origin', async () => {
+  const originalBase = process.env.AUTH0_BASE_URL;
+  process.env.AUTH0_BASE_URL = 'https://officer.example.test/';
+  const f = await fixture();
+  try {
+    assert.equal(
+      (
+        await f.request('/session/role', {
+          method: 'POST',
+          body: { role: 'officer' },
+          headers: { Origin: 'https://officer.example.test' },
+        })
+      ).status,
+      200,
+    );
+    assert.equal(
+      (
+        await f.request('/session/role', {
+          method: 'POST',
+          body: { role: 'officer' },
+          headers: { Origin: 'https://officer.example.test.attacker.invalid' },
+        })
+      ).status,
+      403,
+    );
+  } finally {
+    if (originalBase === undefined) delete process.env.AUTH0_BASE_URL;
+    else process.env.AUTH0_BASE_URL = originalBase;
+    await f.close();
+  }
+});
+
 test('complete request-to-release lifecycle preserves redaction and reviewer gates', async () => {
   const f = await fixture();
   try {
@@ -494,18 +564,29 @@ test('public starter references are source-linked, idempotent and not fictitious
     const corpus = (await f.request('/corpus')).data;
     assert.equal(corpus.length, 24);
     assert.ok(
-      corpus.filter((c) => c.sourceType === 'proactive_publication').every(
-        (c) =>
-          !c.synthetic &&
-          c.sourceType === 'proactive_publication' &&
-          c.requestRef.startsWith('PD-GAC-') &&
-          new URL(c.sourceUrl).hostname === 'international.canada.ca',
-      ),
+      corpus
+        .filter((c) => c.sourceType === 'proactive_publication')
+        .every(
+          (c) =>
+            !c.synthetic &&
+            c.sourceType === 'proactive_publication' &&
+            c.requestRef.startsWith('PD-GAC-') &&
+            new URL(c.sourceUrl).hostname === 'international.canada.ca',
+        ),
     );
     const ati = corpus.filter((c) => c.sourceType === 'ati_release');
     assert.equal(ati.length, 8);
     assert.equal(new Set(ati.map((c) => c.requestRef)).size, 8);
-    assert.ok(ati.every((c) => !c.synthetic && c.sourcePage > 0 && c.pdfSha256.length === 64 && c.treatment === 'released' && new URL(c.pdfUrl).hostname === 'central.bac-lac.gc.ca'));
+    assert.ok(
+      ati.every(
+        (c) =>
+          !c.synthetic &&
+          c.sourcePage > 0 &&
+          c.pdfSha256.length === 64 &&
+          c.treatment === 'released' &&
+          new URL(c.pdfUrl).hostname === 'central.bac-lac.gc.ca',
+      ),
+    );
     assert.equal((await f.request('/does-not-exist')).status, 404);
   } finally {
     await f.close();
@@ -712,6 +793,90 @@ test('failed explicit integrity rerun invalidates older checks and release readi
   } finally {
     delete process.env.GEMINI_API_KEY;
     globalThis.fetch = originalFetch;
+    await f.close();
+  }
+});
+
+test('a wrongly uploaded document can be removed, and a request can be deleted, with a rationale', async () => {
+  const f = await fixture();
+  try {
+    let r = await f.make();
+    const wrong = (
+      await f.request(`/requests/${r.id}/documents`, {
+        method: 'POST',
+        body: { text: 'Wrong file entirely.', name: 'wrong.txt' },
+      })
+    ).data;
+    const docId = wrong.documents[0].id;
+    assert.equal(wrong.status, 'in_review');
+    assert.equal(
+      (
+        await f.request(`/requests/${r.id}/documents/${docId}`, {
+          method: 'DELETE',
+          body: {},
+        })
+      ).status,
+      400,
+    );
+    const removed = await f.request(`/requests/${r.id}/documents/${docId}`, {
+      method: 'DELETE',
+      body: { note: 'Wrong file uploaded in error.' },
+    });
+    assert.equal(removed.status, 200);
+    assert.equal(removed.data.documents.length, 0);
+    assert.equal(removed.data.status, 'received');
+    const audit = await f.request('/audit');
+    assert.ok(audit.data.events.some((e) => e.action === 'Document removed'));
+    const role = await f.request('/session/role', { method: 'POST', body: { role: 'requester' } }),
+      cookie = role.headers.get('set-cookie').split(';')[0];
+    assert.equal(
+      (
+        await f.request(`/requests/${r.id}`, {
+          cookie,
+          method: 'DELETE',
+          body: { note: 'Not an officer.' },
+        })
+      ).status,
+      403,
+    );
+    assert.equal(
+      (await f.request(`/requests/${r.id}`, { method: 'DELETE', body: {} })).status,
+      400,
+    );
+    const deleted = await f.request(`/requests/${r.id}`, {
+      method: 'DELETE',
+      body: { note: 'Created by mistake.' },
+    });
+    assert.equal(deleted.status, 200);
+    assert.equal((await f.request(`/requests/${r.id}`)).status, 404);
+
+    r = await f.make();
+    const doc = (
+      await f.request(`/requests/${r.id}/documents`, {
+        method: 'POST',
+        body: { text: 'Public information.\nEmployee name: Secret Person', name: 'record.txt' },
+      })
+    ).data.documents[0];
+    for (const s of doc.spans)
+      await f.request(`/requests/${r.id}/documents/${doc.id}/spans/${s.id}`, {
+        method: 'PATCH',
+        body: { decision: 'approved' },
+      });
+    await f.request(`/requests/${r.id}/documents/${doc.id}/attestation`, {
+      method: 'PATCH',
+      body: { attested: true },
+    });
+    await f.request(`/requests/${r.id}/release`, { method: 'POST', body: {} });
+    assert.equal(
+      (
+        await f.request(`/requests/${r.id}`, {
+          method: 'DELETE',
+          body: { note: 'Attempt on a released request.' },
+        })
+      ).status,
+      409,
+    );
+  } finally {
     await f.close();
   }
 });

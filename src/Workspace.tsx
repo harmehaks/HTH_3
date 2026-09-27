@@ -20,6 +20,7 @@ import {
   Columns2,
   LockKeyhole,
   Info,
+  Trash2,
 } from 'lucide-react';
 import { api, send } from './api';
 import ReleaseReadiness from './ReleaseReadiness';
@@ -47,6 +48,8 @@ export default function Workspace({ id, categories, onBack, notify, onChanged, o
     [manual, setManual] = useState<string | null>(null),
     [release, setRelease] = useState(false),
     [reopen, setReopen] = useState(false),
+    [removeDocOpen, setRemoveDocOpen] = useState(false),
+    [deleteRequestOpen, setDeleteRequestOpen] = useState(false),
     [note, setNote] = useState(''),
     [editCat, setEditCat] = useState('');
   const viewerRef = useRef<HTMLDivElement>(null);
@@ -100,6 +103,40 @@ export default function Workspace({ id, categories, onBack, notify, onChanged, o
       } catch {
         setRecord(record);
       }
+      notify((e as Error).message, true);
+      return false;
+    } finally {
+      setBusy(false);
+    }
+  }
+  async function removeDocument(docId: string) {
+    setBusy(true);
+    try {
+      const r = await api<RequestRecord>(
+        `/requests/${id}/documents/${docId}`,
+        send({ note }, 'DELETE'),
+      );
+      setDocIndex(0);
+      setSelected(r.documents[0]?.spans[0]?.id || '');
+      saved(r);
+      notify('Document removed.');
+      return true;
+    } catch (e) {
+      notify((e as Error).message, true);
+      return false;
+    } finally {
+      setBusy(false);
+    }
+  }
+  async function deleteRequest() {
+    setBusy(true);
+    try {
+      await api(`/requests/${id}`, send({ note }, 'DELETE'));
+      notify('Request deleted.');
+      onChanged();
+      onBack();
+      return true;
+    } catch (e) {
       notify((e as Error).message, true);
       return false;
     } finally {
@@ -170,6 +207,18 @@ export default function Workspace({ id, categories, onBack, notify, onChanged, o
               <ShieldCheck size={16} />
               Approve release
             </button>
+          )}
+          {!locked && (
+            <IconButton
+              label="Delete request"
+              className="danger-action"
+              onClick={() => {
+                setNote('');
+                setDeleteRequestOpen(true);
+              }}
+            >
+              <Trash2 size={16} />
+            </IconButton>
           )}
         </div>
       </div>
@@ -251,9 +300,20 @@ export default function Workspace({ id, categories, onBack, notify, onChanged, o
                   </select>
                 </div>
                 {!locked && (
-                  <IconButton label="Add a document" onClick={() => onUpload(id)}>
-                    <Plus size={17} />
-                  </IconButton>
+                  <div className="document-toolbar-actions">
+                    <IconButton label="Add a document" onClick={() => onUpload(id)}>
+                      <Plus size={17} />
+                    </IconButton>
+                    <IconButton
+                      label="Remove document"
+                      onClick={() => {
+                        setNote('');
+                        setRemoveDocOpen(true);
+                      }}
+                    >
+                      <Trash2 size={17} />
+                    </IconButton>
+                  </div>
                 )}
               </div>
               <div className="viewer-controls">
@@ -1005,6 +1065,93 @@ export default function Workspace({ id, categories, onBack, notify, onChanged, o
               </button>
               <button className="button primary" disabled={busy || !note.trim()}>
                 Reopen request
+              </button>
+            </div>
+          </form>
+        </Modal>
+      )}
+      {removeDocOpen && doc && (
+        <Modal
+          title="Remove this document"
+          subtitle="Its suggestions, decisions and integrity checks are removed with it."
+          onClose={() => setRemoveDocOpen(false)}
+        >
+          <form
+            onSubmit={async (e) => {
+              e.preventDefault();
+              const ok = await removeDocument(doc.id);
+              if (ok) {
+                setRemoveDocOpen(false);
+                setNote('');
+              }
+            }}
+          >
+            <p className="form-note">
+              <Info size={15} />
+              <span>
+                Removing <strong>{doc.name}</strong> does not delete the request. Upload the
+                correct document afterward.
+              </span>
+            </p>
+            <label>
+              Reason for removal
+              <textarea
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                required
+                rows={3}
+                placeholder="e.g. Wrong file uploaded in error."
+              />
+            </label>
+            <div className="modal-actions">
+              <button
+                className="button secondary"
+                type="button"
+                onClick={() => setRemoveDocOpen(false)}
+              >
+                Cancel
+              </button>
+              <button className="button primary" disabled={busy || !note.trim()}>
+                <Trash2 size={16} />
+                Remove document
+              </button>
+            </div>
+          </form>
+        </Modal>
+      )}
+      {deleteRequestOpen && (
+        <Modal
+          title="Delete this request"
+          subtitle="This permanently removes the request and every document in it."
+          onClose={() => setDeleteRequestOpen(false)}
+        >
+          <form
+            onSubmit={async (e) => {
+              e.preventDefault();
+              await deleteRequest();
+            }}
+          >
+            <label>
+              Reason for deletion
+              <textarea
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                required
+                rows={3}
+                placeholder="e.g. Created by mistake."
+              />
+            </label>
+            <div className="modal-actions">
+              <button
+                className="button secondary"
+                type="button"
+                onClick={() => setDeleteRequestOpen(false)}
+              >
+                Cancel
+              </button>
+              <button className="button primary" disabled={busy || !note.trim()}>
+                <Trash2 size={16} />
+                Delete request
               </button>
             </div>
           </form>

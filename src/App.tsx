@@ -23,7 +23,6 @@ import {
   Check,
   LoaderCircle,
   AlertCircle,
-  Headphones,
   UserRound,
   KeyRound,
 } from 'lucide-react';
@@ -40,6 +39,7 @@ import {
   RequesterPortal,
 } from './Pages';
 import { NewRequestDialog, UploadDialog, BriefingDialog } from './Dialogs';
+import Login from './Login';
 import type { Category, Page, RequestSummary, User, RequestRecord } from './types';
 const navItems: { page: Page; label: string; icon: ReactNode }[] = [
   { page: 'overview', label: 'Overview', icon: <LayoutDashboard size={18} /> },
@@ -66,7 +66,14 @@ export default function App() {
     [profile, setProfile] = useState(false),
     [version, setVersion] = useState(0),
     [toast, setToast] = useState<{ message: string; error: boolean } | null>(null),
-    [theme, setTheme] = useState(() => localStorage.getItem('redactor-theme') || 'light');
+    [theme, setTheme] = useState(
+      () =>
+        localStorage.getItem('mr-redactor-theme') ||
+        localStorage.getItem('redactor-theme') ||
+        'light',
+    ),
+    // Demo sessions are always populated server-side, so the landing gate is client-held.
+    [entered, setEntered] = useState(() => sessionStorage.getItem('mr-redactor-entered') === '1');
   const searchRef = useRef<HTMLInputElement>(null),
     toastTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const notify = useCallback((message: string, isError = false) => {
@@ -103,7 +110,7 @@ export default function App() {
   }, [refresh]);
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
-    localStorage.setItem('redactor-theme', theme);
+    localStorage.setItem('mr-redactor-theme', theme);
   }, [theme]);
   useEffect(() => {
     const listener = (e: KeyboardEvent) => {
@@ -165,6 +172,15 @@ export default function App() {
       notify((e as Error).message, true);
     }
   }
+  // Demo mode has no server-side logout; this only clears the client-held landing gate.
+  function signOut() {
+    setProfile(false);
+    sessionStorage.removeItem('mr-redactor-entered');
+    setEntered(false);
+    setPage('overview');
+    setSelected('');
+    setSearch('');
+  }
   const totalFindings = requests
       .filter((r) => r.status !== 'released')
       .reduce((s, r) => s + (r.leaks || 0) + (r.conflicts || 0), 0),
@@ -174,6 +190,26 @@ export default function App() {
   const isOfficer = user?.role === 'officer';
   const visiblePage =
     search && isOfficer && ['overview', 'workspace', 'settings'].includes(page) ? 'requests' : page;
+  if (!loading && !error && (!user || (demo && !auth && !entered)))
+    return (
+      <Login
+        demo={demo}
+        authEnabled={auth}
+        notify={notify}
+        onSignedIn={async () => {
+          sessionStorage.setItem('mr-redactor-entered', '1');
+          try {
+            const s = await api<{ user: User }>('/session');
+            setUser(s.user);
+            await refresh();
+            setCategories(await api<Category[]>('/categories'));
+          } catch (e) {
+            notify((e as Error).message, true);
+          }
+          setEntered(true);
+        }}
+      />
+    );
   return (
     <div className="app-shell">
       {mobile && (
@@ -184,20 +220,12 @@ export default function App() {
         />
       )}
       <aside className={`sidebar ${mobile ? 'open' : ''}`}>
-        <button className="brand" onClick={() => go('overview')} aria-label="Redactor home">
+        <button className="brand" onClick={() => go('overview')} aria-label="Mr. Redactor home">
           <img src="/favicon.svg" alt="" />
           <span>
-            redactor<span className="brand-period">.</span>
+            Mr. Redactor<span className="brand-period">.</span>
           </span>
         </button>
-        <div className="workspace-switch">
-          <span className="workspace-avatar">{isOfficer ? 'AT' : 'JL'}</span>
-          <div>
-            <strong>{isOfficer ? 'ATIP Workspace' : 'Requester portal'}</strong>
-            <small>{isOfficer ? 'Access with confidence' : 'Your access requests'}</small>
-          </div>
-          <LockIcon />
-        </div>
         <div className="nav-label">WORKSPACE</div>
         <nav aria-label="Main navigation">
           {(isOfficer ? navItems : navItems.filter((n) => n.page === 'overview')).map((item) => (
@@ -317,6 +345,7 @@ export default function App() {
             <div className="profile-wrapper">
               <button
                 className="profile-button"
+                aria-label="Open profile menu"
                 onClick={() => setProfile((p) => !p)}
                 aria-expanded={profile}
               >
@@ -341,7 +370,7 @@ export default function App() {
                     onClick={() => setProfile(false)}
                   />
                   <div className="profile-menu">
-                    {demo ? (
+                    {demo && (
                       <>
                         <div>DEMO ROLE</div>
                         <button onClick={() => changeRole('officer')}>
@@ -353,12 +382,18 @@ export default function App() {
                           Requester portal{!isOfficer && <Check size={14} />}
                         </button>
                       </>
-                    ) : auth ? (
+                    )}
+                    {auth ? (
                       <a href="/logout">
                         <LogOut size={16} />
                         Sign out
                       </a>
-                    ) : null}
+                    ) : (
+                      <button onClick={signOut}>
+                        <LogOut size={16} />
+                        Sign out
+                      </button>
+                    )}
                     <button
                       onClick={() => {
                         setProfile(false);
@@ -391,7 +426,7 @@ export default function App() {
             </div>
           ) : !user ? (
             <div className="sign-in panel">
-              <img src="/favicon.svg" alt="Redactor" />
+              <img src="/favicon.svg" alt="Mr. Redactor" />
               <div className="eyebrow">ACCESS WITH CONFIDENCE</div>
               <h1>
                 A thoughtful workspace
@@ -475,7 +510,7 @@ export default function App() {
               <ShieldCheck size={12} />
               Human reviewed. Thoughtfully disclosed.
             </span>
-            <span>Redactor · Access to information, with confidence.</span>
+            <span>Mr. Redactor · Every line accounted for.</span>
           </footer>
         </main>
       </div>
@@ -512,7 +547,9 @@ export default function App() {
           }}
         />
       )}
-      {modal === 'briefing' && <BriefingDialog onClose={() => setModal(null)} notify={notify} />}
+      {modal === 'briefing' && isOfficer && (
+        <BriefingDialog onClose={() => setModal(null)} notify={notify} />
+      )}
       {modal === 'notifications' && (
         <Modal
           title="A few things need your attention"
@@ -542,34 +579,62 @@ export default function App() {
       )}
       {modal === 'help' && (
         <Modal
-          title="A clearer path, step by step"
-          subtitle="Your judgment stays at the centre of every release."
+          title={isOfficer ? 'A clearer path, step by step' : 'How your request is handled'}
+          subtitle={
+            isOfficer
+              ? 'Your judgment stays at the centre of every release.'
+              : 'What happens between asking and receiving.'
+          }
           onClose={() => setModal(null)}
           wide
         >
           <div className="help-steps">
-            {[
-              [
-                <Files size={22} />,
-                'Start with a request',
-                'Create a request, choose the institution, and upload a text-based PDF or paste a record.',
-              ],
-              [
-                <ScanLine size={22} />,
-                'Review with context',
-                'Click highlighted spans to read the suggested category, confidence and justification. Approve withholding, disclose with a reason, or add a manual redaction.',
-              ],
-              [
-                <ShieldCheck size={22} />,
-                'Take a second look',
-                'The independent leak tester sees only the candidate output. Consistency checks compare it with released excerpts. Address each finding and rerun after text changes.',
-              ],
-              [
-                <Check size={22} />,
-                'Release with confidence',
-                'Confirm a full-document review and approve the release. The requester sees only approved redacted records. Download PDF, text, or an officer decision log.',
-              ],
-            ].map(([icon, title, description], i) => (
+            {(isOfficer
+              ? [
+                  [
+                    <Files size={22} />,
+                    'Start with a request',
+                    'Create a request, choose the institution, and upload a text-based PDF or paste a record.',
+                  ],
+                  [
+                    <ScanLine size={22} />,
+                    'Review with context',
+                    'Click highlighted spans to read the suggested category, confidence and justification. Approve withholding, disclose with a reason, or add a manual redaction.',
+                  ],
+                  [
+                    <ShieldCheck size={22} />,
+                    'Take a second look',
+                    'The independent leak tester sees only the candidate output. Consistency checks compare it with released excerpts. Address each finding and rerun after text changes.',
+                  ],
+                  [
+                    <Check size={22} />,
+                    'Release with confidence',
+                    'Confirm a full-document review and approve the release. The requester sees only approved redacted records. Download PDF, text, or an officer decision log.',
+                  ],
+                ]
+              : [
+                  [
+                    <Files size={22} />,
+                    'Make your request',
+                    'Tell us which records you are looking for and which federal institution holds them. You will get a request number straight away.',
+                  ],
+                  [
+                    <ScanLine size={22} />,
+                    'An officer reads the record',
+                    'A trained ATIP officer reviews it line by line against the Access to Information Act. Nothing is withheld without a specific statutory reason.',
+                  ],
+                  [
+                    <ShieldCheck size={22} />,
+                    'An independent check runs',
+                    'Before anything reaches you, a separate pass tests whether the remaining context could still reveal what was withheld.',
+                  ],
+                  [
+                    <Check size={22} />,
+                    'Collect your records',
+                    'Once the release is approved it appears here. Read it in your browser or download the redacted PDF or text.',
+                  ],
+                ]
+            ).map(([icon, title, description], i) => (
               <div key={i}>
                 <span>{icon}</span>
                 <div>
@@ -584,17 +649,20 @@ export default function App() {
           <div className="help-demo">
             <Badge tone="amber">Demonstration mode</Badge>
             <p>
-              The seeded people, requests, documents and reference excerpts are fictional. Use the
-              profile menu to try the requester portal. Configure live services in Settings, and
-              import real public ATI excerpts into the reference library.
+              {isOfficer
+                ? 'The seeded people, requests, documents and reference excerpts are fictional. Use the profile menu to try the requester portal. Configure live services in Settings, and import real public ATI excerpts into the reference library.'
+                : 'The requests and records shown here are fictional samples. This is a working prototype, not a government submission portal.'}
             </p>
           </div>
           <div className="help-shortcuts">
+            {isOfficer && (
+              <span>
+                <kbd>N</kbd>New request
+              </span>
+            )}
             <span>
-              <kbd>N</kbd>New request
-            </span>
-            <span>
-              <kbd>/</kbd>Search workspace
+              <kbd>/</kbd>
+              {isOfficer ? 'Search workspace' : 'Search your requests'}
             </span>
             <span>
               <kbd>Esc</kbd>Close dialog
@@ -602,7 +670,7 @@ export default function App() {
           </div>
           <div className="modal-actions">
             <button className="button primary" onClick={() => setModal(null)}>
-              Let’s get started
+              {isOfficer ? 'Let’s get started' : 'Got it'}
               <ArrowRight size={15} />
             </button>
           </div>
@@ -615,13 +683,6 @@ function FileIcon() {
   return (
     <span className="icon-tile purple">
       <Files size={17} />
-    </span>
-  );
-}
-function LockIcon() {
-  return (
-    <span className="workspace-lock">
-      <ShieldCheck size={15} />
     </span>
   );
 }

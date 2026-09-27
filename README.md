@@ -1,10 +1,12 @@
-# Redactor
+# Mr. Redactor
+
+The Mr. Redactor dossier redesign is integrated with the current disclosure studio. See [integration notes](docs/REBRAND_INTEGRATION.md) for compatibility fixes and verification.
 
 Evidence update: [real ATI sources, comparison demo, evaluation limits and sponsor claims](docs/EVIDENCE.md). Eight distinct completed ATI requests now have official PDF sources and page-level provenance. `npm run evaluate` reports public-release and synthetic results separately; `npm run evaluate:gemini` requires a configured live key.
 
 Disclosure studio update: see [upgrade notes](docs/UPGRADE_NOTES.md) for the release checklist, overlap replacement, disclosure balance, receipt export, regression results and prioritized next steps. Run `npm run evaluate:spans` for the additional synthetic span benchmark.
 
-A complete working prototype for AI-assisted Access to Information review. Redactor combines an officer dashboard, a document review workspace, an independent contextual leak tester, cross-request consistency checks, a requester portal, and spoken briefings.
+A complete working prototype for AI-assisted Access to Information review. Mr. Redactor combines an officer dashboard, a document review workspace, an independent contextual leak tester, cross-request consistency checks, a requester portal, and spoken briefings.
 
 The application runs locally without accounts or API keys. Optional live integrations are implemented for **Gemini, Auth0, Tiger Data/PostgreSQL with pgvector, and ElevenLabs**. Live integrations require your credentials and must be verified against your own accounts. This prototype is not a government submission portal or an approved system for operational government records.
 
@@ -17,7 +19,7 @@ Requires **Node.js 22.13 or newer** and npm. This workspace was tested with Node
 From PowerShell:
 
 ```powershell
-Set-Location 'E:\Redactor'
+# Open a terminal in this repository directory.
 npm install
 npm run dev
 ```
@@ -27,6 +29,10 @@ On macOS/Linux, open a terminal in the repository directory and run `npm ci`, th
 For browser checks on any platform, run `npx playwright install chromium` once, then `npm run test:e2e`. Optional overrides: `PLAYWRIGHT_CHANNEL` or `PLAYWRIGHT_CHROMIUM_EXECUTABLE`.
 
 Open **http://127.0.0.1:5173**. The API runs at http://127.0.0.1:3001.
+
+Choose **Sign in**, then **Enter as officer** for the local demo, or choose **Requester** to view the requester portal. Demo email/password fields do not authenticate anyone. With Auth0 configured, sign-in uses the provider, and an authenticated session opens the workspace directly. **Overview → Listen to briefing** opens the transcript and audio controls.
+
+Existing installations retain `data/redactor.sqlite`, the `X-Redactor-Client` API header and `https://redactor.app/roles` Auth0 claim. The server also accepts the bundle's `X-Mr-Redactor-Client` header. The new display name does not require changing your Auth0 Action or moving your database.
 
 No `.env` file is required for the local demo. It starts with nine synthetic access requests, one re-review exercise with a pre-attached real ATI reference, sixteen synthetic release excerpts, sixteen proactive-publication excerpts, and eight excerpts from distinct completed ATI responses. Requests and decisions persist in `data/redactor.sqlite`. Fonts and illustrations are served locally; the UI does not require a third-party font service.
 

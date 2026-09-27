@@ -1,0 +1,16 @@
+{
+  "at": "2026-09-27T02:35:00.043Z",
+  "scope": "Live calls with synthetic data. PostgreSQL probe uses a temporary table and rollback. Auth0 discovery does not prove interactive login.",
+  "services": {
+    "Tiger Data": {
+      "status": "failed",
+      "checks": {
+        "dns": "passed"
+      },
+      "code": "ETIMEDOUT",
+      "reason": "Database TCP endpoint could not be reached; authentication and TLS were not reached.",
+      "stage": "TCP"
+    }
+  },
+  "status": "incomplete"
+}

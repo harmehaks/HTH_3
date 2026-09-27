@@ -1,6 +1,7 @@
 import { chromium } from '@playwright/test';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { browserOptions } from './browser-options.js';
+const productionOrigin = process.env.PRODUCTION_BASE_URL || 'http://127.0.0.1:3001';
 const browser = await chromium.launch(browserOptions());
 try {
   const page = await browser.newPage({
@@ -12,21 +13,26 @@ try {
   page.on('console', (m) => {
     if (m.type() === 'error') errors.push(m.text());
   });
-  await page.goto('http://127.0.0.1:3001');
+  await page.goto(productionOrigin);
+  await page.locator('.login-shell, .welcome-card').first().waitFor();
+  if (await page.locator('.login-shell').count()) {
+    await page.getByRole('button', { name: 'Sign in', exact: true }).click();
+    await page.getByRole('button', { name: 'Enter as officer', exact: true }).click();
+  }
   await page.getByRole('heading', { name: 'A clearer path to disclosure.' }).waitFor();
   await page.evaluate(() => document.fonts.ready);
   mkdirSync('artifacts', { recursive: true });
   await page.screenshot({ path: 'artifacts/production-dashboard.png', fullPage: true });
-  await page.goto('http://127.0.0.1:3001/pitch.html');
+  await page.goto(`${productionOrigin}/pitch.html`);
   await page.getByRole('button', { name: 'Next slide' }).click();
   if ((await page.locator('#counter').textContent()) !== '02 / 08')
     throw new Error('Production presentation navigation failed.');
   await page.screenshot({ path: 'artifacts/production-presentation.png', fullPage: true });
-  const missing = await page.request.get('http://127.0.0.1:3001/api/unknown-route');
+  const missing = await page.request.get(`${productionOrigin}/api/unknown-route`);
   if (missing.status() !== 404) throw new Error('Missing API route did not return 404.');
   const report = {
     at: new Date().toISOString(),
-    productionOrigin: 'http://127.0.0.1:3001',
+    productionOrigin,
     dashboard: true,
     presentation: true,
     fonts: true,
