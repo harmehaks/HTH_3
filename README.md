@@ -153,7 +153,7 @@ exports.onExecutePostLogin = async (event, api) => {
 };
 ```
 
-6. Stop the previous development process with Ctrl+C, then run **`npm run dev:auth0`** and open **http://localhost:3000**. This command uses the configured public Auth0 settings and existing local SQLite storage in this process, without editing `.env` or connecting to the currently unreachable Tiger Data service. Gemini settings are retained. Choose **Sign in → Continue securely**, or **Create an account** to sign up. Passwords are entered only on Auth0's page. The profile menu provides sign-out. Demo role switching is disabled.
+6. Stop the previous development process with Ctrl+C, then run **`npm run dev:auth0`** and open **http://localhost:3000**. This command uses the configured public Auth0 settings and existing local SQLite storage in this process, without editing `.env` or connecting to the configured Tiger Data service. Gemini settings are retained. Choose **Sign in → Continue securely**, or **Create an account** to sign up. Passwords are entered only on Auth0's page. The profile menu provides sign-out. Demo role switching is disabled.
 7. For officer-created requests, supply the intended requester’s Auth0 subject ID (`auth0|…`). Requests created by a requester automatically belong to that authenticated subject.
 
 To avoid retaining synthetic demo records in an authenticated workspace, use a separate data file:
@@ -183,7 +183,7 @@ DATABASE_SSL=true
 
 The app creates `records` (JSONB requests, corpus and audit) and `corpus_vectors` (`vector(768)` plus an HNSW cosine index). PostgreSQL connections require valid TLS certificates when SSL is enabled. Set `DATABASE_SSL=false` only for a trusted local database.
 
-Restart and check Settings. Switching database providers starts in the selected database; SQLite records are **not automatically migrated**. In an authenticated empty workspace, use Release library → **Load public starter set**, or import your own released excerpts.
+Restart and check Settings. Switching database providers starts in the selected database; SQLite records are **not automatically migrated**. To copy an existing workspace safely, use `npm run migrate:tiger -- --check` followed by `npm run migrate:tiger -- --apply`; see [the migration guide](docs/TIGER_MIGRATION.md). In an authenticated empty workspace, use Release library → **Load public starter set**, or import your own released excerpts.
 
 The prototype stores complete request records as JSON, including review time stamps and risk measurements. It does not create a TimescaleDB hypertable or claim a dedicated time-series schema. PostgreSQL provides persistent storage and genuine pgvector queries.
 

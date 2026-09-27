@@ -1,0 +1,23 @@
+{
+  "at": "2026-09-27T04:04:52.315Z",
+  "status": "passed",
+  "scope": "Existing SQLite workspace migrated to hosted Tiger Data; app reads the migrated workspace. Demo roles; no claim of live Auth0 verification.",
+  "records": {
+    "audit": 2,
+    "request": 10,
+    "corpus": 40
+  },
+  "totalRecords": 52,
+  "vectors": 40,
+  "identicalRecordFingerprint": true,
+  "auditVerified": true,
+  "tlsEncrypted": true,
+  "tlsAuthorized": true,
+  "vectorSearch": true,
+  "publishedComparison": true,
+  "pdfExport": true,
+  "browserDashboard": true,
+  "browserErrors": [],
+  "storage": "Tiger Data / PostgreSQL + pgvector",
+  "sqliteBackupRetained": true
+}

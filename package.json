@@ -29,7 +29,8 @@
     "verify:auth0:handoff": "node scripts/check-auth0-handoff.js",
     "verify:live-workflow": "node scripts/verify-live-workflow.js",
     "verify:container": "node scripts/verify-container.js",
-    "evaluate:spans": "node scripts/benchmark-spans.js"
+    "evaluate:spans": "node scripts/benchmark-spans.js",
+    "migrate:tiger": "node scripts/migrate-tiger.js"
   },
   "dependencies": {
     "@fontsource/dm-sans": "^5.3.0",
