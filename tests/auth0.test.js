@@ -1,11 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import express from 'express';
+import { request as httpRequest } from 'node:http';
 import { once } from 'node:events';
 import { generateKeyPairSync, sign, createHash } from 'node:crypto';
 import { createStore } from '../server/store.js';
 import { createApp } from '../server/app.js';
 import { createAuthSessionStore } from '../server/auth-session-store.js';
+import { diagnoseAuthError } from '../server/auth-error-page.js';
 
 // A synthetic OIDC provider exercises the installed official SDK, including
 // discovery, PKCE, token signature/nonce validation and session persistence.
@@ -56,12 +58,10 @@ async function fixture(t, { denyExchange = false } = {}) {
     assert.equal(req.headers.authorization, undefined);
     assert.equal(req.body.redirect_uri, `${base}/callback`);
     if (denyExchange)
-      return res
-        .status(401)
-        .json({
-          error: 'access_denied',
-          error_description: 'Unauthorized synthetic-private-marker',
-        });
+      return res.status(401).json({
+        error: 'access_denied',
+        error_description: 'Unauthorized synthetic-private-marker',
+      });
     const code = codes.get(req.body.code);
     assert.ok(code);
     assert.equal(
@@ -135,6 +135,14 @@ async function fixture(t, { denyExchange = false } = {}) {
     );
     assert.equal(response.status, 302);
     const url = new URL(response.headers.get('location'));
+    assert.equal(response.headers.get('cache-control'), 'no-store');
+    assert.equal(url.searchParams.get('response_mode'), 'query');
+    const transaction = response.headers
+      .getSetCookie()
+      .find((cookie) => cookie.startsWith('mr_redactor_auth_verification='));
+    assert.ok(transaction);
+    assert.match(transaction, /HttpOnly/i);
+    assert.match(transaction, /SameSite=Lax/i);
     assert.equal(url.searchParams.get('redirect_uri'), `${base}/callback`);
     assert.equal(url.searchParams.get('response_type'), 'code');
     assert.equal(url.searchParams.get('login_hint'), 'synthetic@example.test');
@@ -151,6 +159,80 @@ async function fixture(t, { denyExchange = false } = {}) {
   }
   return { request, login, store, cookies, base, exchanges: () => exchanges };
 }
+
+test('missing callback cookies show fresh-login recovery rather than client-secret advice', async (t) => {
+  const f = await fixture(t);
+  const callback = await f.request('/callback?code=synthetic-code&state=invalid', {
+    headers: { Accept: 'text/html' },
+  });
+  assert.equal(callback.status, 400);
+  const html = await callback.text();
+  assert.match(html, /AUTH0_TRANSACTION_MISSING/);
+  assert.match(html, /temporary sign-in cookie/);
+  assert.ok(!html.includes('AUTH0_CLIENT_SECRET'));
+  assert.ok(!html.includes('synthetic-code'));
+  assert.equal(f.exchanges(), 0);
+});
+
+test('an Auth0 signup denial is identified before token exchange without exposing raw provider text', async (t) => {
+  const f = await fixture(t);
+  const signup = await f.request('/signup');
+  const url = new URL(signup.headers.get('location'));
+  const callback = await f.request(
+    `/callback?error=access_denied&error_description=synthetic-private-marker&state=${encodeURIComponent(url.searchParams.get('state'))}`,
+    { headers: { Accept: 'text/html' } },
+  );
+  assert.equal(callback.status, 400);
+  const html = await callback.text();
+  assert.match(html, /AUTH0_PROVIDER_DENIED/);
+  assert.match(html, /Login Actions/);
+  assert.ok(!html.includes('synthetic-private-marker'));
+  assert.ok(!html.includes('AUTH0_CLIENT_SECRET'));
+  assert.equal(f.exchanges(), 0);
+  assert.equal((await f.store.all('auth-session')).length, 0);
+});
+
+test('login and signup redirects use the configured host before setting a transaction cookie', async (t) => {
+  const f = await fixture(t);
+  for (const path of ['/login', '/signup']) {
+    // fetch normalizes Host; use the HTTP client to exercise a different origin.
+    const response = await new Promise((resolve, reject) => {
+      const request = httpRequest(
+        f.base + path,
+        { headers: { Host: 'alternate.example.test' } },
+        (response) => {
+          response.resume();
+          response.on('end', () => resolve(response));
+        },
+      );
+      request.on('error', reject);
+      request.end();
+    });
+    assert.equal(response.statusCode, 302);
+    assert.equal(response.headers.location, f.base + path);
+    assert.ok(
+      !(response.headers['set-cookie'] || []).some((cookie) =>
+        cookie.startsWith('mr_redactor_auth_verification='),
+      ),
+    );
+  }
+});
+
+test('safe callback diagnostics distinguish mismatched state, nonce, used codes and network errors', () => {
+  const cases = [
+    [{ message: 'state mismatch, expected synthetic-private-marker' }, 'AUTH0_STATE_MISMATCH'],
+    [{ message: 'nonce mismatch, expected synthetic-private-marker' }, 'AUTH0_NONCE_MISMATCH'],
+    [{ error: 'invalid_grant' }, 'AUTH0_CODE_REJECTED'],
+    [{ message: 'Timeout awaiting request' }, 'AUTH0_NETWORK_FAILURE'],
+    [{ message: 'unexpected JWT signature' }, 'AUTH0_TOKEN_INVALID'],
+    [{ message: 'synthetic-private-marker' }, 'AUTH0_CALLBACK_FAILED'],
+  ];
+  for (const [error, code] of cases) {
+    const diagnostic = diagnoseAuthError(error, { code: true });
+    assert.equal(diagnostic.code, code);
+    assert.ok(!JSON.stringify(diagnostic).includes('synthetic-private-marker'));
+  }
+});
 
 test('a denied SDK code exchange shows recovery guidance without leaking provider payloads or granting access', async (t) => {
   const f = await fixture(t, { denyExchange: true });

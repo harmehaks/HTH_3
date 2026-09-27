@@ -1,9 +1,9 @@
 {
-  "at": "2026-09-27T03:43:46.254Z",
-  "scope": "One deliberate invalid-code callback through the official SDK. No valid login or user credentials supplied.",
+  "at": "2026-09-27T04:12:33.413Z",
+  "scope": "Deliberate invalid-code callback through the official SDK; no account sign-in performed.",
   "clientId": "EdEu2b1ioiUTJrEvBVTDxuB1XSuOLzOX",
   "callbackStatus": 400,
   "providerErrorCode": "access_denied",
-  "clientAuthentication": "rejected",
+  "diagnostic": "AUTH0_CLIENT_REJECTED",
   "interactiveLogin": "not verified"
 }

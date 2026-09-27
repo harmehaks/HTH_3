@@ -7,12 +7,12 @@ export default defineConfig({
   server: {
     port: 5173,
     strictPort: true,
-    proxy: {
-      '/api': target,
-      '/login': target,
-      '/signup': target,
-      '/logout': target,
-      '/callback': target,
-    },
+    // The SDK and canonical login route must see the browser's public origin.
+    proxy: Object.fromEntries(
+      ['/api', '/login', '/signup', '/logout', '/callback'].map((path) => [
+        path,
+        { target, changeOrigin: false },
+      ]),
+    ),
   },
 });

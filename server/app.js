@@ -3,7 +3,7 @@ import session from 'express-session';
 import helmet from 'helmet';
 import { auth } from 'express-openid-connect';
 import { createAuthSessionStore } from './auth-session-store.js';
-import { authErrorPage } from './auth-error-page.js';
+import { authErrorPage, diagnoseAuthError } from './auth-error-page.js';
 import multer from 'multer';
 import PDFDocument from 'pdfkit';
 import { randomUUID, createHash } from 'node:crypto';
@@ -64,6 +64,11 @@ export function createApp(store, { demo = process.env.DEMO_MODE !== 'false', tes
       },
     }),
   );
+  // Authentication redirects must never be reused from a browser/proxy cache.
+  app.use((req, res, next) => {
+    res.setHeader('Cache-Control', 'no-store');
+    next();
+  });
   app.use(express.json({ limit: '2mb' }));
   if (authEnabled) {
     app.use(
@@ -76,7 +81,12 @@ export function createApp(store, { demo = process.env.DEMO_MODE !== 'false', tes
         clientSecret: process.env.AUTH0_CLIENT_SECRET,
         clientAuthMethod: 'client_secret_post',
         issuerBaseURL: process.env.AUTH0_ISSUER_BASE_URL,
-        authorizationParams: { response_type: 'code', scope: 'openid profile email' },
+        authorizationParams: {
+          response_type: 'code',
+          response_mode: 'query',
+          scope: 'openid profile email',
+        },
+        transactionCookie: { name: 'mr_redactor_auth_verification', sameSite: 'Lax' },
         routes: { login: false, postLogoutRedirect: '/' },
         session: {
           store: createAuthSessionStore(store),
@@ -90,6 +100,8 @@ export function createApp(store, { demo = process.env.DEMO_MODE !== 'false', tes
     );
     // The SDK performs the flow; these routes only supply UI hints.
     app.get(['/login', '/signup'], (req, res) => {
+      const baseURL = new URL(process.env.AUTH0_BASE_URL || 'http://localhost:5173');
+      if (req.get('host') !== baseURL.host) return res.redirect(new URL(req.path, baseURL).href);
       const authorizationParams = {};
       if (req.path === '/signup') authorizationParams.screen_hint = 'signup';
       const loginHint = clean(req.query.login_hint);
@@ -967,17 +979,28 @@ export function createApp(store, { demo = process.env.DEMO_MODE !== 'false', tes
       err.status ||
       err.statusCode ||
       (['LIMIT_FILE_SIZE', 'LIMIT_FILE_COUNT'].includes(err.code) ? 400 : 500);
-    if (authEnabled && req.path === '/callback' && req.get('accept')?.includes('text/html')) {
-      const exchangeDenied = Boolean(
-        req.query.code &&
-        !req.query.error &&
-        ['access_denied', 'invalid_client', 'unauthorized_client'].includes(err.error),
-      );
-      return res
-        .status(status)
-        .set('Cache-Control', 'no-store')
-        .type('html')
-        .send(authErrorPage({ clientID: process.env.AUTH0_CLIENT_ID, exchangeDenied }));
+    if (authEnabled && req.path === '/callback') {
+      const diagnostic = diagnoseAuthError(err, {
+        code: Boolean(req.query.code),
+        providerError: Boolean(req.query.error),
+      });
+      console.warn(`Auth0 callback failed: ${diagnostic.code}`);
+      res.status(status).set('Cache-Control', 'no-store');
+      if (req.get('accept')?.includes('text/html'))
+        return res
+          .type('html')
+          .send(
+            authErrorPage({
+              clientID: process.env.AUTH0_CLIENT_ID,
+              baseURL: process.env.AUTH0_BASE_URL || 'http://localhost:5173',
+              diagnostic,
+            }),
+          );
+      return res.json({
+        error: diagnostic.explanation,
+        diagnostic: diagnostic.code,
+        providerErrorCode: diagnostic.providerCode,
+      });
     }
     res.status(status).json({
       error:

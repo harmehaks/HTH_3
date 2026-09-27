@@ -13,9 +13,11 @@ In the Auth0 dashboard, select the application with client ID `EdEu2b1ioiUTJrEvB
 | Allowed callback URLs         | `http://localhost:3000/callback` |
 | Allowed logout URLs           | `http://localhost:3000/`         |
 
-The attachment says these dashboard settings are already saved. Open the app using **localhost**, matching these URLs.
+The attachment declares these dashboard settings; verify them in the dashboard. Under the application's **Credentials** tab, select **Client Secret (Post)** and save. Some dashboard versions show this as Token Endpoint Authentication Method under Settings → Advanced Settings → OAuth. Under Settings → Advanced Settings → Grant Types, enable **Authorization Code**. Open the app using **localhost**, matching the registered URLs. Official navigation: [Auth0 Credential Settings](https://auth0.com/docs/get-started/applications/credentials).
 
 ## 2. Enter secrets locally
+
+For guided setup, run `npm run setup:auth0` in your own interactive terminal. Copy the Client Secret from **Redactor_OG**, the application with the client ID shown above, and paste it at the hidden prompt. The command writes matching Auth0 settings to `.env`, removes conflicting duplicates, preserves other service credentials and database settings, and creates a session secret only if the existing one is missing or too short. It does not print the pasted secret. The existing running server must be restarted afterward. The command cannot change Auth0 dashboard settings; confirm **Post** authentication there.
 
 Open the existing `.env` in your editor. Do not paste secrets into chat, put them in any `VITE_` variable, or commit the file. Preserve the existing Gemini, ElevenLabs and database settings.
 
@@ -87,13 +89,27 @@ npm run verify:auth0:handoff
 
 The SDK integration tests use a synthetic OIDC provider to exercise real code exchange, PKCE, signed-token validation, roles, server sessions, invalid callbacks and logout. Browser tests check the existing demo and authenticated-session UI. `verify:auth0` calls the live tenant's public discovery and signing-key endpoints; it does not authenticate a real user or validate the saved client secret. It deliberately reports `partial` and exits with code 1 until interactive verification is available. With `dev:auth0` running, `verify:auth0:handoff` checks the redirects and opens the real Auth0 login form without entering credentials. Complete the manual steps above to verify live login.
 
-Recorded verification for this setup: **42 backend tests passed, 12 browser tests passed, production build passed, live discovery and signing keys passed, and live browser handoff to the Auth0 login form passed**. The callback error recovery page was also checked at mobile width. Live login remains unresolved: the reported Auth0 `feacft` event and a deliberate invalid-code probe both returned `access_denied`; confirm the matching client secret and authentication method before relying on live login. Evidence: [live discovery](../artifacts/live-auth0-verification.json), [live handoff](../artifacts/auth0-handoff-verification.json), [client diagnostic](../artifacts/auth0-client-diagnostic.json).
+Recorded verification for this setup: **47 backend tests and all 12 browser tests passed**, covering the SDK flow, signup denial, missing cookies, safe diagnostics, canonical redirects and preservation of other credentials during setup. The production build passed. Live discovery, signing keys and the updated login/signup browser handoff passed. Live login remains unresolved: after guided setup and a server restart, the user reported **AUTH0_CLIENT_REJECTED** from a fresh sign-in. This identifies a token-exchange failure but does not establish its precise cause. The SDK explicitly supplies the configured secret with Post authentication; its generic environment defaults cannot override those explicit options. Confirm the saved dashboard method, application type and Authorization Code grant, then inspect the latest real Auth0 failure description. A deliberately invalid-code probe cannot establish whether the saved secret is valid. Evidence: [live discovery](../artifacts/live-auth0-verification.json), [live handoff](../artifacts/auth0-handoff-verification.json), [client diagnostic](../artifacts/auth0-client-diagnostic.json).
 
 ## Troubleshooting
 
 If `/callback` reports `access_denied (Unauthorized)` after submitting credentials, first verify the client secret belongs to the Express application `EdEu2b1ioiUTJrEvBVTDxuB1XSuOLzOX`. This launch command intentionally uses that ID, even if `.env` still contains an earlier app's ID. The earlier Next.js app's secret will not match it. Stop the running command and restart `npm run dev:auth0` after editing secrets; refreshing the page does not reload server environment variables. Begin a new login instead of refreshing the previous callback.
 
 In Auth0 **Monitoring → Logs**, inspect the newest failure. A successful login followed by **Failed Exchange: Authorization Code for Token** (`feacft`) points to the code-exchange stage; the description is needed to confirm the cause. Confirm Post authentication and that the Authorization Code grant is enabled. A Login Action denial needs investigation in the Action's logs rather than changing the user's role or password. Browser callback errors now provide a recovery page and preserve the denied authentication state.
+
+The error page now shows a safe diagnostic instead of recommending client-secret changes for every failure:
+
+| Diagnostic | Next step |
+| --- | --- |
+| `AUTH0_TRANSACTION_MISSING` | Start from localhost:3000 in one tab with cookies allowed. Avoid replaying a callback. |
+| `AUTH0_STATE_MISMATCH`, `AUTH0_NONCE_MISMATCH` | Begin a fresh sign-in in one tab. |
+| `AUTH0_PROVIDER_DENIED` | Check the newest Auth0 log and Login Actions; the provider denied signup/login before code exchange. |
+| `AUTH0_CLIENT_REJECTED` | Use setup:auth0 with the matching Client Secret and confirm Post authentication. |
+| `AUTH0_CODE_REJECTED` | Start a new sign-in; an old or already-used code cannot be reused. |
+| `AUTH0_NETWORK_FAILURE` | Restore server connectivity to Auth0, then retry. |
+| `AUTH0_TOKEN_INVALID`, `AUTH0_CALLBACK_FAILED` | Share the diagnostic and latest log Description to identify the failing step. |
+
+Auth redirects now use no-store caching, an application-specific transaction cookie, and the SDK's query response mode with SameSite=Lax cookies. The development proxy preserves the browser host so login/signup can canonicalize to the configured origin before setting the transaction cookie. Starting a login from another host redirects to the configured host; a changed hostname loses optional login hints. Start a fresh login after these changes; an earlier callback used the old transaction cookie.
 
 Official diagnostic reference: [Auth0's failed code-exchange guidance](https://support.auth0.com/center/s/article/troubleshooting-auth0-log-type-feacft-after-the-success-login-log).
 
