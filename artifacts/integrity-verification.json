@@ -1,0 +1,28 @@
+{
+  "at": "2026-09-27T04:47:52.323Z",
+  "status": "passed",
+  "liveWorkspace": {
+    "storage": "Tiger Data / PostgreSQL + pgvector",
+    "allOpen": 6,
+    "contextualLeaks": 1,
+    "consistencyConflicts": 5,
+    "resolved": 0,
+    "existingFindingsTester": "Local context checks",
+    "storedFindingsUnchanged": true
+  },
+  "liveProviderProbe": {
+    "model": "gemini-3.1-flash-lite",
+    "syntheticContextualLeakDetected": true,
+    "clueVerifiedVisible": true,
+    "publicATIReferenceMatched": "A-2026-00675",
+    "databaseReadOnly": true
+  },
+  "tests": {
+    "apiAndEngine": 9,
+    "isolatedBrowser": 2,
+    "productionBuild": true,
+    "productionBrowserErrors": []
+  },
+  "fixed": "After a failed Run checks, refresh invalidated server findings and show a fresh-checks warning.",
+  "scope": "Live filters inspected without changing findings. Resolution and failed-provider behavior tested against isolated in-memory SQLite; Gemini probe used synthetic text and one public ATI reference. Not a detection-accuracy benchmark."
+}

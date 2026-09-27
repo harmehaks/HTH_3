@@ -212,18 +212,22 @@ export function IntegrityPage({
       ),
     ),
     leaks = findings.filter((x) => x.f.clue && !x.f.resolved).length,
-    conflicts = findings.filter((x) => !x.f.clue && !x.f.resolved).length;
+    conflicts = findings.filter((x) => !x.f.clue && !x.f.resolved).length,
+    unchecked = records.flatMap((r) =>
+      r.documents.filter((d) => !d.integrity || d.integrityError),
+    ).length;
   async function run() {
     if (!selected) return;
     setBusy(true);
     try {
       await api(`/requests/${selected}/integrity`, send({}));
       notify('Independent checks completed on the current candidate release.');
-      onChanged();
-      load();
     } catch (e) {
       notify((e as Error).message, true);
     } finally {
+      // Failed checks invalidate stored findings too; never retain a stale success view.
+      onChanged();
+      load();
       setBusy(false);
     }
   }
@@ -322,6 +326,13 @@ export function IntegrityPage({
           </button>
         ))}
       </div>
+      {loaded && !error && unchecked > 0 && (
+        <p className="warning-note" role="alert">
+          <strong>Fresh integrity checks required.</strong> {unchecked}{' '}
+          {unchecked === 1 ? 'document has' : 'documents have'} missing or failed checks. Run checks
+          successfully before release; an empty findings list is not a completed check.
+        </p>
+      )}
       {!loaded ? (
         <Loading />
       ) : error ? (
@@ -337,7 +348,13 @@ export function IntegrityPage({
       ) : visible.length === 0 ? (
         <div className="panel">
           <Empty
-            title={tab === 'resolved' ? 'No resolved findings yet' : 'No findings in this view'}
+            title={
+              tab === 'resolved'
+                ? 'No resolved findings yet'
+                : unchecked > 0
+                  ? 'Checks need to be rerun'
+                  : 'No findings in this view'
+            }
             description="Continue full-document review. Automated checks cannot guarantee a safe release."
           />
         </div>
