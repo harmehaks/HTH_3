@@ -1,0 +1,99 @@
+FICTIONAL TRAINING DOCUMENT - NOT AN AIR CANADA RECORD
+All people, events, figures, identifiers, locations and procedures below are invented.
+Air Canada is used only as the setting for a software test. No real employee is described.
+
+AIR CANADA SCENARIO: CONFIDENTIAL PERSONNEL REVIEW PACKET
+Scenario reference: TEST-AC-HR-2026-001
+Prepared: 2026-09-21
+Intended audience: fictional HR reviewer and fictional employment counsel
+Purpose: practice removing private personnel details while preserving useful program information.
+
+1. PROGRAM INFORMATION INTENDED TO REMAIN READABLE
+
+This fictional onboarding pilot evaluated whether shorter training sessions improved completion.
+In this scenario, 52 employees participated and the aggregate completion rate was 94%.
+The fictional pilot reduced administrative processing time by 18%.
+The next program review is planned for October 2026.
+This packet contains no real flight schedules, passenger records or operational security procedures.
+External enquiries: training-demo@example.invalid
+The external enquiries mailbox is a deliberately public, fictional contact for this exercise.
+
+2. PRIMARY EMPLOYEE - RESTRICTED PERSONNEL DETAILS
+
+Employee name: Avery Testperson
+Employee identifier: TEST-AC-0001
+Position in this scenario: onboarding coordinator, mock Toronto station
+Date of birth: 1993-04-16
+Private address: 18 Example Lane, Testville, ON, A0A 0A0 (invented address)
+Personal contact: avery.testperson@example.invalid
+Personal telephone: 416-555-0142
+Social insurance number: 000 000 000 (invalid test placeholder; not a usable SIN)
+Passport identifier: TEST-PASSPORT-0001 (not a valid passport number)
+
+Payroll record:
+Annual base salary: CAD 74,250
+Bonus amount under review: CAD 2,800
+Deposit account: TEST-BANK-ACCOUNT-0001 (not a valid financial account)
+Payroll routing reference: TEST-ROUTING-0001
+Benefit enrollment: family coverage; one dependent recorded in the fictional benefits file
+Dependent name and birth date: Casey Testperson, 2018-07-09
+
+Accommodation record:
+The employee reported a migraine condition and requested reduced exposure to bright screens.
+The fictional clinician recommended two short screen breaks per hour during a four-week trial.
+Appointment date: 2026-09-12
+Medical case identifier: TEST-MED-0001
+The supporting note contains health information and should not accompany a general program release.
+
+Performance record:
+Individual assessment: 3.2 out of 5 for the fictional review period.
+The supervisor recorded two missed training-document deadlines and an agreed coaching plan.
+The employee disputed the second entry and requested correction before the next assessment.
+These statements describe only an invented training scenario, not an actual employment event.
+
+3. EMERGENCY CONTACT AND PRIVATE HOUSEHOLD INFORMATION
+
+Employee name: Morgan Sampleton
+Relationship to primary employee: spouse and nominated emergency contact
+Personal contact: morgan.sampleton@example.invalid
+Personal telephone: 416-555-0176
+Private address: 18 Example Lane, Testville, ON, A0A 0A0 (invented address)
+Emergency instructions: call the spouse first; do not include the dependent's school in an open report.
+Dependent school: Example School, fictional classroom BLUE-TEST
+
+4. SECOND EMPLOYEE - PRIVATE COMPARISON RECORD
+
+Employee name: Quinn Example
+Employee identifier: TEST-AC-0002
+Personal contact: quinn.example@example.invalid
+Personal telephone: 604-555-0193
+Date of birth: 1989-11-03
+Private address: 42 Sample Crescent, Exampletown, BC, A0A 0A0 (invented address)
+Social insurance number: 000 000 000 (invalid test placeholder; not a usable SIN)
+Annual base salary: CAD 68,900
+Deposit account: TEST-BANK-ACCOUNT-0002 (not a valid financial account)
+Leave record: five days of family-care leave in the fictional review period.
+Private household note: employee requested that the reason for family-care leave remain restricted.
+
+5. CONTEXT THAT MAY REVEAL A WITHHELD IDENTITY
+
+The only employee assigned to the fictional Aurora access pilot at the mock Toronto station received the 2026 Lantern training award and can be identified in the scenario's staff directory.
+The fictional directory entry links that unique assignment and award to the primary employee.
+Removing the name alone therefore does not remove the identifying context.
+
+6. INTERNAL DISCUSSION AND FICTIONAL COUNSEL COMMUNICATION
+
+Internal advice: Consider a four-week trial accommodation, limit the shared roster to availability, and keep individual medical explanations in the restricted personnel file.
+Recommended option: Publish the aggregate training results while excluding individual payroll, medical, household and performance details.
+Privileged legal advice: This invented confidential lawyer-client communication discusses the fictional accommodation dispute and correction request; maintain its confidentiality pending a human privilege assessment.
+Counsel contact: counsel-demo@example.invalid
+This is a fictional counsel mailbox, not an actual lawyer's contact information.
+
+7. RELEASE OBJECTIVE
+
+The intended training release should preserve the pilot's purpose, participation count, aggregate completion rate, processing-time improvement and next review date.
+It should omit private identities and contacts, identity and financial identifiers, exact birth dates, household and dependent details, individual health information, individual pay and employment assessments, and the unique identifying context.
+A reviewer must assess the internal discussion and fictional counsel communication separately.
+The deliberately public external enquiries mailbox can remain after a reviewer records the reason.
+
+END OF FICTIONAL TRAINING DOCUMENT

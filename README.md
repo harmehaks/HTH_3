@@ -30,6 +30,8 @@ For browser checks on any platform, run `npx playwright install chromium` once, 
 
 Open **http://127.0.0.1:5173**. The API runs at http://127.0.0.1:3001.
 
+If your saved Tiger Data URL cannot connect, use `npm run dev:local` for the existing SQLite workspace while retaining configured Auth0 and Gemini. If Auth0 setup is incomplete, use `npm run dev:demo` for explicit demo roles and local SQLite, with configured Gemini retained. These commands do not edit `.env`. The frontend uses port 5173 strictly; stop an earlier dev process with Ctrl+C before starting another copy.
+
 Choose **Sign in**, then **Enter as officer** for the local demo, or choose **Requester** to view the requester portal. Demo email/password fields do not authenticate anyone. With Auth0 configured, sign-in uses the provider, and an authenticated session opens the workspace directly. **Overview → Listen to briefing** opens the transcript and audio controls.
 
 Existing installations retain `data/redactor.sqlite`, the `X-Redactor-Client` API header and `https://redactor.app/roles` Auth0 claim. The server also accepts the bundle's `X-Mr-Redactor-Client` header. The new display name does not require changing your Auth0 Action or moving your database.
@@ -123,16 +125,16 @@ Official references: [Structured outputs](https://ai.google.dev/gemini-api/docs/
 ## 5. Connect Auth0
 
 1. Create an Auth0 **Regular Web Application**.
-2. For development set Allowed Callback URLs to `http://localhost:5173/callback` and Allowed Logout URLs to `http://localhost:5173`.
-3. Set these values in `.env` and open the app at **http://localhost:5173** so the origin matches your registered base URL:
+2. The supplied Express application is registered for **http://localhost:3000**. Set Allowed Callback URLs to `http://localhost:3000/callback`, Allowed Logout URLs to `http://localhost:3000/`, and Token Endpoint Authentication Method to **Post** (`client_secret_post`).
+3. Set these values in `.env`. Use the client secret belonging to this Express application, rather than the earlier Next.js application:
 
 ```dotenv
 DEMO_MODE=false
 SESSION_SECRET=your-own-long-random-session-secret
-AUTH0_ISSUER_BASE_URL=https://your-tenant.auth0.com
-AUTH0_CLIENT_ID=your-client-id
+AUTH0_ISSUER_BASE_URL=https://dev-i7p4kdozefycl6u7.ca.auth0.com
+AUTH0_CLIENT_ID=EdEu2b1ioiUTJrEvBVTDxuB1XSuOLzOX
 AUTH0_CLIENT_SECRET=your-client-secret
-AUTH0_BASE_URL=http://localhost:5173
+AUTH0_BASE_URL=http://localhost:3000
 AUTH0_ROLES_CLAIM=https://redactor.app/roles
 ```
 
@@ -151,7 +153,7 @@ exports.onExecutePostLogin = async (event, api) => {
 };
 ```
 
-6. Restart and sign in. The local demo switch is disabled when Auth0 is configured. Partial Auth0 configuration fails with a clear error.
+6. Stop the previous development process with Ctrl+C, then run **`npm run dev:auth0`** and open **http://localhost:3000**. This command uses the configured public Auth0 settings and existing local SQLite storage in this process, without editing `.env` or connecting to the currently unreachable Tiger Data service. Gemini settings are retained. Choose **Sign in → Continue securely**, or **Create an account** to sign up. Passwords are entered only on Auth0's page. The profile menu provides sign-out. Demo role switching is disabled.
 7. For officer-created requests, supply the intended requester’s Auth0 subject ID (`auth0|…`). Requests created by a requester automatically belong to that authenticated subject.
 
 To avoid retaining synthetic demo records in an authenticated workspace, use a separate data file:
@@ -162,7 +164,13 @@ DATA_PATH=data/authenticated.sqlite
 
 For public hosting, use your HTTPS URL in Auth0 and `AUTH0_BASE_URL`. This is one shared officer workspace, not a multi-department tenant isolation system.
 
-Official reference: [Auth0 Express OIDC setup](https://auth0.com/docs/quickstart/webapp/express/index).
+The official `express-openid-connect` 2.x SDK handles login, callback validation and logout. Sessions are persisted on the server in the selected database; the browser receives a signed, HttpOnly session ID. A session expires after eight hours of inactivity or 24 hours total, and logout deletes its database record. Expired records are deleted when accessed. Keep this database private because session records contain identity tokens. The demo uses separate `express-session` middleware.
+
+Run `npm run verify:auth0` to check the configured tenant's discovery and signing keys. This check cannot prove the client secret or interactive login. See [the full setup and manual login checks](docs/AUTH0_SETUP.md).
+
+For a different development or deployment origin, configure the matching callback/logout URLs, update `AUTH0_BASE_URL`, and use the ordinary `dev`/`dev:local` or `start` command. `dev:auth0` deliberately selects the supplied localhost:3000 application settings.
+
+Official reference: [Auth0 Express SDK](https://github.com/auth0/express-openid-connect).
 
 ## 6. Connect Tiger Data / PostgreSQL
 

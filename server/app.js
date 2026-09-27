@@ -2,6 +2,8 @@ import express from 'express';
 import session from 'express-session';
 import helmet from 'helmet';
 import { auth } from 'express-openid-connect';
+import { createAuthSessionStore } from './auth-session-store.js';
+import { authErrorPage } from './auth-error-page.js';
 import multer from 'multer';
 import PDFDocument from 'pdfkit';
 import { randomUUID, createHash } from 'node:crypto';
@@ -36,11 +38,14 @@ export function createApp(store, { demo = process.env.DEMO_MODE !== 'false', tes
     !authEnabled
   )
     throw new Error(
-      'Provide all three Auth0 issuer, client ID and client secret values, or leave them all empty for the local demo.',
+      'Provide AUTH0_ISSUER_BASE_URL, AUTH0_CLIENT_ID and AUTH0_CLIENT_SECRET together. To use demo roles without changing saved credentials, run npm run dev:demo or npm run start:demo.',
     );
   if (!demo && !authEnabled)
     throw new Error('DEMO_MODE=false requires complete Auth0 configuration.');
-  if (!demo && (!process.env.SESSION_SECRET || process.env.SESSION_SECRET.length < 32))
+  if (
+    (!demo || authEnabled) &&
+    (!process.env.SESSION_SECRET || process.env.SESSION_SECRET.length < 32)
+  )
     throw new Error('A SESSION_SECRET of at least 32 characters is required.');
   app.disable('x-powered-by');
   app.set('trust proxy', 1);
@@ -60,28 +65,50 @@ export function createApp(store, { demo = process.env.DEMO_MODE !== 'false', tes
     }),
   );
   app.use(express.json({ limit: '2mb' }));
-  if (authEnabled)
+  if (authEnabled) {
     app.use(
       auth({
         authRequired: false,
         auth0Logout: true,
-        secret: process.env.SESSION_SECRET || 'local-development-secret-replace-before-deploy',
+        secret: process.env.SESSION_SECRET,
         baseURL: process.env.AUTH0_BASE_URL || 'http://localhost:5173',
         clientID: process.env.AUTH0_CLIENT_ID,
         clientSecret: process.env.AUTH0_CLIENT_SECRET,
+        clientAuthMethod: 'client_secret_post',
         issuerBaseURL: process.env.AUTH0_ISSUER_BASE_URL,
         authorizationParams: { response_type: 'code', scope: 'openid profile email' },
+        routes: { login: false, postLogoutRedirect: '/' },
+        session: {
+          store: createAuthSessionStore(store),
+          signSessionStoreCookie: true,
+          requireSignedSessionStoreCookie: true,
+          rollingDuration: 8 * 3600,
+          absoluteDuration: 24 * 3600,
+          cookie: { httpOnly: true, sameSite: 'Lax' },
+        },
       }),
     );
+    // The SDK performs the flow; these routes only supply UI hints.
+    app.get(['/login', '/signup'], (req, res) => {
+      const authorizationParams = {};
+      if (req.path === '/signup') authorizationParams.screen_hint = 'signup';
+      const loginHint = clean(req.query.login_hint);
+      if (loginHint) authorizationParams.login_hint = loginHint;
+      if (['google-oauth2', 'windowslive', 'github'].includes(req.query.connection))
+        authorizationParams.connection = req.query.connection;
+      return res.oidc.login({ returnTo: '/', authorizationParams });
+    });
+  }
   // Demo sessions contain only a role and demo subject; never used when real Auth0 is active.
-  app.use(
-    session({
-      secret: process.env.SESSION_SECRET || 'local-demo-only-session-secret-32-characters',
-      resave: false,
-      saveUninitialized: false,
-      cookie: { httpOnly: true, sameSite: 'lax', secure: !demo, maxAge: 8 * 3600000 },
-    }),
-  );
+  if (!authEnabled)
+    app.use(
+      session({
+        secret: process.env.SESSION_SECRET || 'local-demo-only-session-secret-32-characters',
+        resave: false,
+        saveUninitialized: false,
+        cookie: { httpOnly: true, sameSite: 'lax', secure: !demo, maxAge: 8 * 3600000 },
+      }),
+    );
   app.use((req, res, next) => {
     res.setHeader('Cache-Control', 'no-store');
     if (authEnabled && req.oidc?.isAuthenticated()) {
@@ -937,7 +964,21 @@ export function createApp(store, { demo = process.env.DEMO_MODE !== 'false', tes
   app.use((err, req, res, next) => {
     if (res.headersSent) return next(err);
     const status =
-      err.status || (['LIMIT_FILE_SIZE', 'LIMIT_FILE_COUNT'].includes(err.code) ? 400 : 500);
+      err.status ||
+      err.statusCode ||
+      (['LIMIT_FILE_SIZE', 'LIMIT_FILE_COUNT'].includes(err.code) ? 400 : 500);
+    if (authEnabled && req.path === '/callback' && req.get('accept')?.includes('text/html')) {
+      const exchangeDenied = Boolean(
+        req.query.code &&
+        !req.query.error &&
+        ['access_denied', 'invalid_client', 'unauthorized_client'].includes(err.error),
+      );
+      return res
+        .status(status)
+        .set('Cache-Control', 'no-store')
+        .type('html')
+        .send(authErrorPage({ clientID: process.env.AUTH0_CLIENT_ID, exchangeDenied }));
+    }
     res.status(status).json({
       error:
         err.code === 'LIMIT_FILE_SIZE'

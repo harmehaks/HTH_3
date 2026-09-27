@@ -6,23 +6,43 @@ import { dirname, resolve } from 'node:path';
 export async function createStore({
   url = process.env.DATABASE_URL,
   path = process.env.DATA_PATH || 'data/redactor.sqlite',
+  connectionTimeoutMillis = 10000,
 } = {}) {
   let sqlite, pool;
   if (url) {
     pool = new pg.Pool({
       connectionString: url,
+      connectionTimeoutMillis,
+      query_timeout: 30000,
       ssl: process.env.DATABASE_SSL === 'false' ? false : { rejectUnauthorized: true },
     });
-    await pool.query('CREATE EXTENSION IF NOT EXISTS vector');
-    await pool.query(
-      'CREATE TABLE IF NOT EXISTS records (id TEXT PRIMARY KEY, kind TEXT NOT NULL, body JSONB NOT NULL)',
+    pool.on('error', (error) =>
+      console.error(
+        `Database connection interrupted (${error.code || 'PG_CONNECTION_ERROR'}). Retry the request after connectivity returns.`,
+      ),
     );
-    await pool.query(
-      'CREATE TABLE IF NOT EXISTS corpus_vectors (id TEXT PRIMARY KEY, embedding vector(768), model TEXT NOT NULL)',
-    );
-    await pool.query(
-      'CREATE INDEX IF NOT EXISTS corpus_vectors_cosine ON corpus_vectors USING hnsw (embedding vector_cosine_ops)',
-    );
+    try {
+      await pool.query('CREATE EXTENSION IF NOT EXISTS vector');
+      await pool.query(
+        'CREATE TABLE IF NOT EXISTS records (id TEXT PRIMARY KEY, kind TEXT NOT NULL, body JSONB NOT NULL)',
+      );
+      await pool.query(
+        'CREATE TABLE IF NOT EXISTS corpus_vectors (id TEXT PRIMARY KEY, embedding vector(768), model TEXT NOT NULL)',
+      );
+      await pool.query(
+        'CREATE INDEX IF NOT EXISTS corpus_vectors_cosine ON corpus_vectors USING hnsw (embedding vector_cosine_ops)',
+      );
+    } catch (cause) {
+      await pool.end().catch(() => {});
+      const code = cause.code || cause.errors?.[0]?.code || 'DATABASE_STARTUP_FAILED';
+      throw Object.assign(
+        new Error(
+          `Tiger Data startup failed (${code}). Check database connectivity, credentials and TLS. To run with your existing local records, use npm run dev:local or npm run start:local. Your .env and cloud database are unchanged.`,
+          { cause },
+        ),
+        { code },
+      );
+    }
   } else {
     if (path !== ':memory:') mkdirSync(dirname(resolve(path)), { recursive: true });
     sqlite = new DatabaseSync(path);

@@ -6,6 +6,13 @@ export default defineConfig({
   build: { assetsInlineLimit: 0 },
   server: {
     port: 5173,
-    proxy: { '/api': target, '/login': target, '/logout': target, '/callback': target },
+    strictPort: true,
+    proxy: {
+      '/api': target,
+      '/login': target,
+      '/signup': target,
+      '/logout': target,
+      '/callback': target,
+    },
   },
 });

@@ -1,0 +1,15 @@
+{
+  "at": "2026-09-27T03:34:14.307Z",
+  "base": "http://localhost:3000",
+  "checks": {
+    "anonymousSession": "passed",
+    "login": "passed",
+    "signup": "passed",
+    "invalidCallbackRejected": "passed",
+    "logoutReturnURL": "passed",
+    "browserHandoff": "passed",
+    "hostedLoginForm": "passed"
+  },
+  "scope": "Live public handoff only. No user login, token exchange or saved-secret validation.",
+  "status": "passed"
+}

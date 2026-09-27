@@ -245,8 +245,7 @@ export default function Login({ demo, authEnabled, onSignedIn, notify }: Props) 
             {federated && (
               <p className="login-note">
                 <Info size={13} />
-                Your role comes from the <code>officer</code> claim on your account. It cannot be
-                chosen at sign-in.
+                Your access is assigned by your organisation. It cannot be chosen at sign-in.
               </p>
             )}
           </div>
@@ -304,6 +303,9 @@ export default function Login({ demo, authEnabled, onSignedIn, notify }: Props) 
 
           {federated && (
             <>
+              <p className="login-note">
+                New here? <a href="/signup">Create an account</a>
+              </p>
               <div className="login-divider">
                 <span>or continue with</span>
               </div>

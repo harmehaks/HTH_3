@@ -416,7 +416,7 @@ export default function App() {
             <div className="panel">
               <Empty
                 title="The workspace couldn’t connect"
-                description={`${error} Start the backend with npm run dev and reload this page.`}
+                description={error}
                 action={
                   <button className="button primary" onClick={() => location.reload()}>
                     Try again

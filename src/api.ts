@@ -8,9 +8,12 @@ export async function api<T>(path: string, options: RequestInit = {}): Promise<T
       ...options.headers,
     },
   });
-  const data = await response
-    .json()
-    .catch(() => ({ error: 'The server returned an unreadable response.' }));
+  const data = await response.json().catch(() => ({
+    error:
+      response.status >= 500
+        ? 'The API server is unavailable. Check the terminal startup message, then retry after the server starts.'
+        : 'The server returned an unreadable response.',
+  }));
   if (!response.ok) throw new Error(data.error || `Request failed (${response.status}).`);
   return data;
 }

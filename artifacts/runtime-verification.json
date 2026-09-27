@@ -1,0 +1,17 @@
+{
+  "at": "2026-09-27T03:01:51.619Z",
+  "origin": "http://127.0.0.1:5173",
+  "running": true,
+  "backendTests": { "status": "passed", "count": 36 },
+  "browserTests": { "status": "passed", "count": 12 },
+  "productionBuild": "passed",
+  "compiledProduction": "passed",
+  "duplicatePortRejected": true,
+  "dashboardAndNavigation": true,
+  "briefing": true,
+  "storage": "SQLite",
+  "classification": "Gemini",
+  "auth": "Demo sessions",
+  "browserErrors": [],
+  "scope": "Running local demo with existing SQLite records, GET navigation and session role selection only. No document changes or release actions."
+}

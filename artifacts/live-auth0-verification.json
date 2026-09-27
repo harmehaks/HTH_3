@@ -1,0 +1,14 @@
+{
+  "at": "2026-09-27T03:28:44.498Z",
+  "scope": "Live calls with synthetic data. PostgreSQL probe uses a temporary table and rollback. Auth0 discovery does not prove interactive login.",
+  "services": {
+    "Auth0": {
+      "status": "partial",
+      "discovery": "passed",
+      "signingKeys": "passed",
+      "interactiveLogin": "not tested",
+      "reason": "An officer and requester must complete interactive login to verify client credentials, callback, token validation and roles."
+    }
+  },
+  "status": "incomplete"
+}

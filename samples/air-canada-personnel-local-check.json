@@ -1,0 +1,22 @@
+{
+  "fixture": "Entirely fictional Air Canada personnel training scenario",
+  "source": "samples/air-canada-personnel-fictional.txt",
+  "pdf": "samples/air-canada-personnel-fictional.pdf",
+  "pdfPages": 2,
+  "characters": 5699,
+  "localSuggestions": 19,
+  "categories": {
+    "personal": 16,
+    "advice": 2,
+    "privilege": 1
+  },
+  "pdfLocalSuggestions": 19,
+  "pdfContextualFindings": 2,
+  "lowConfidenceSuggestions": 2,
+  "contextualFindings": 1,
+  "pdfExtractionChecked": true,
+  "baselineIdentityRemoved": true,
+  "manualReviewRequired": true,
+  "mosaicClueMitigationChecked": true,
+  "note": "Fixture checks only; not real-world accuracy or a legal assessment."
+}
