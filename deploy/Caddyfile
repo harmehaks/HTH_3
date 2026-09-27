@@ -1,0 +1,8 @@
+mr-redactor.vip {
+    encode zstd gzip
+    reverse_proxy redactor:3001
+}
+
+www.mr-redactor.vip {
+    redir https://mr-redactor.vip{uri} permanent
+}

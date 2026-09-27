@@ -261,6 +261,8 @@ The Compose file uses local development database credentials and binds the appli
 
 For Vultr or another host, deploy the image, connect your managed PostgreSQL/Tiger Data URL, supply environment secrets, put a TLS reverse proxy in front, and configure Auth0 for the final origin. `HOST=0.0.0.0` enables container networking. No host, service account, domain registration, purchase or public deployment has been performed by this project.
 
+For **mr-redactor.vip**, use [the deployment guide](docs/DEPLOYMENT.md), `.env.production.example`, and the standalone `compose.production.yaml`. This stack uses hosted Tiger Data, requires Auth0 and Gemini credentials, disables demo access, and places Caddy HTTPS in front of the app. Its commands include public deployment checks and live provider checks. The domain is registered, but a server still needs to be created and configured.
+
 ## 11. Limits to understand
 
 - The implemented taxonomy covers the six categories in the brief, not every exemption/exclusion in the Act.

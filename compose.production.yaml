@@ -1,0 +1,55 @@
+# Standalone production stack. Do not combine with the local compose.yaml.
+# docker compose --env-file .env.production -f compose.production.yaml up -d --build --wait
+name: mr-redactor
+services:
+  redactor:
+    build: .
+    env_file: .env.production
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: '3001'
+      DEMO_MODE: 'false'
+      DATABASE_SSL: 'true'
+      AUTH0_BASE_URL: https://mr-redactor.vip
+      DATABASE_URL: ${DATABASE_URL:?Set the full Tiger URL in .env.production}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:?Set GEMINI_API_KEY in .env.production}
+      AUTH0_ISSUER_BASE_URL: ${AUTH0_ISSUER_BASE_URL:?Set the Auth0 tenant URL in .env.production}
+      AUTH0_CLIENT_ID: ${AUTH0_CLIENT_ID:?Set AUTH0_CLIENT_ID in .env.production}
+      AUTH0_CLIENT_SECRET: ${AUTH0_CLIENT_SECRET:?Set the matching Auth0 client secret in .env.production}
+      SESSION_SECRET: ${SESSION_SECRET:?Set a random session secret of at least 32 characters}
+    expose:
+      - '3001'
+    volumes:
+      - app_data:/app/data
+      - verification_reports:/app/artifacts
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: '10m'
+        max-file: '3'
+  caddy:
+    image: caddy:2
+    ports:
+      - '80:80'
+      - '443:443'
+      - '443:443/udp'
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      redactor:
+        condition: service_healthy
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: '10m'
+        max-file: '3'
+volumes:
+  app_data:
+  verification_reports:
+  caddy_data:
+  caddy_config:
